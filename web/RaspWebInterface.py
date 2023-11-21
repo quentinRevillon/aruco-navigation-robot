@@ -1,6 +1,6 @@
 import os
 import RPi.GPIO as GPIO
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 import datetime
 
 GPIO.setmode(GPIO.BCM)
@@ -36,7 +36,17 @@ def index():
         'data':data,
     }
     #return render_template('rpi_index.html',**templateData)
-    return render_template('rpi3b_webcontroller.html',**templateData)           
+    return render_template('rpi3b_webcontroller.html',**templateData)
+
+@app.route('/setPinValue', methods=['POST'])
+def set_pin_value():
+    pin = int(request.form['pin'])
+    value = int(request.form['value'])
+    print(f"Received value: {value} for pin: GPIO{pin}")
+
+    # Ici, vous pouvez ajouter le code pour contrôler les pins GPIO en fonction de la valeur
+
+    return "Value set successfully"
 
 @app.route('/<actionid>') 
 def handleRequest(actionid):
