@@ -36,7 +36,7 @@ def index():
         'data':data,
     }
     #return render_template('rpi_index.html',**templateData)
-    return render_template('rpi3b_webcontroller.html',**templateData)
+    return render_template('curseurs.html',**templateData)
 
 @app.route('/setPinValue', methods=['POST'])
 def set_pin_value():
