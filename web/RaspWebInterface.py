@@ -40,7 +40,7 @@ def index():
 
 @app.route('/setPinValue', methods=['POST'])
 def set_pin_value():
-    pin = int(request.form['pin'])
+    pin = request.form['pin']
     value = int(request.form['value'])
     print(f"Received value: {value} for pin: GPIO{pin}")
 

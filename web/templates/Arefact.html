@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
     <title>Contrôle des curseurs</title>
     <style>
@@ -74,11 +75,11 @@
         
 
         const curseur1 = document.getElementById("curseur1");
-        const curseur1Value = document.getElementById("curseur1Value");
+
         const initialCurseur1Value = curseur1.value; // Valeur initiale
 
         const curseur2 = document.getElementById("curseur2");
-        const curseur2Value = document.getElementById("curseur2Value");
+ 
         const initialCurseur2Value = curseur2.value; // Valeur initiale
         
         function updateCurseurValue(curseur, valueElement) {
@@ -86,44 +87,47 @@
         }
         
         
-        // Associer un événement "input" à chaque curseur pour une mise à jour en temps réel
-        curseur1.addEventListener("input", function() {
-            updateCurseurValue(curseur1, curseur1Value);
-        });
-
-        curseur2.addEventListener("input", function() {
-            updateCurseurValue(curseur2, curseur2Value);
-        });
-
+       
         // Réinitialiser les curseurs à leur valeur initiale lorsqu'ils sont relâchés (événement "change")
         curseur1.addEventListener("change", function() {
             curseur1.value = initialCurseur1Value;
-            updateCurseurValue(curseur1, curseur1Value);
+        
         });
 
         curseur2.addEventListener("change", function() {
             curseur2.value = initialCurseur2Value;
-            updateCurseurValue(curseur2, curseur2Value);
+            
         });
 
-        // Initialisez les valeurs affichées
-        updateCurseurValue(curseur1, curseur1Value);
-        updateCurseurValue(curseur2, curseur2Value);
+            function sendSliderPosition(pin, value) {
+                    $.ajax({
+                        url: '/setPinValue',
+                        type: 'POST',
+                        data: { 'pin': pin, 'value': value },
+                        success: function(response) {
+                            // Traitez la réponse si nécessaire
+                        }
+                    });
+                }
+
+         // Écouteur d'événements pour les changements de curseurs
+        $('#sliderContainer input[type="curseur1"]').on('input change', function() {
+            var pin = "vertical"; // Extraire le numéro du pin
+            var value = $(this).val(); // Valeur du curseur
+             // Mise à jour de l'affichage de la valeur
+            sendSliderPosition(pin, value); // Envoyer la valeur au serveur
+           });
+
+        $('#sliderContainer input[type="curseur2"]').on('input change', function() {
+            var pin = "horizontal"; // Extraire le numéro du pin
+            var value = $(this).val(); // Valeur du curseur
+             // Mise à jour de l'affichage de la valeur
+            sendSliderPosition(pin, value); // Envoyer la valeur au serveur
+           });
+
 
         
 
-        function resetCursorsToInitialPosition() {
-    // Réinitialiser les valeurs des curseurs
-    curseur1.value = initialCurseur1Value;
-    updateCurseurValue(curseur1, curseur1Value);
-
-    curseur2.value = initialCurseur2Value;
-    updateCurseurValue(curseur2, curseur2Value);
-}
-
-// Ajouter des écouteurs pour l'événement change
-curseur1.addEventListener("change", resetCursorsToInitialPosition);
-curseur2.addEventListener("change", resetCursorsToInitialPosition);
         
       
 
