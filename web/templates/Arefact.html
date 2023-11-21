@@ -5,12 +5,26 @@
 
     <title>Contrôle des curseurs</title>
     <style>
-        input[type="range"]  {
+        input[type="curseur1"]  {
         -webkit-appearance: none;
         width: 100%;
         height: 100px; /* Hauteur des boutons */
   }
-        input[type="range"]::-webkit-slider-thumb {
+        input[type="curseur1"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 100px; /* Largeur des boutons */
+        height: 100px; /* Hauteur des boutons */
+        background-color: #faee00; /* Couleur des boutons */
+        border-radius: 50%; /* Forme des boutons (rond) */
+
+        }
+
+        input[type="curseur2"]  {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 100px; /* Hauteur des boutons */
+  }
+        input[type="curseur2"]::-webkit-slider-thumb {
         -webkit-appearance: none;
         width: 100px; /* Largeur des boutons */
         height: 100px; /* Hauteur des boutons */
@@ -62,12 +76,12 @@
     
     
     <div id="curseur1Container">
-        <input type="range" id="curseur1" min="-100" max="100" value="0">
+        <input type="curseur1" id="curseur1" min="-100" max="100" value="0">
     </div>
 
     <!-- Curseur 2 (horizontal) -->
     <div id="curseur2Container">
-        <input type="range" id="curseur2" min="-100" max="100" value="0">
+        <input type="curseur2" id="curseur2" min="-100" max="100" value="0">
     </div>
 
     <script>
