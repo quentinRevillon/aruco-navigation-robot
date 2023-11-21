@@ -1,10 +1,28 @@
+# -*- coding: utf-8 -*-
 import cv2
-WC = cv2.VideoCapture(0)
-while True:
-    RET, F = WC.read()
-    cv2.imshow("Live Feeds", F)
-    KEY = cv2.waitKey(1)
-    if KEY == ord("q"):
-        break
-WC.release()
-cv2.destroyAllWindows()
+from flask import Flask, render_template, Response
+
+app = Flask(__name__)
+camera = cv2.VideoCapture(0)  # Utilisez le numéro de périphérique vidéo correspondant à votre caméra
+
+def generate_frames():
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == "__main__":
+    app.run(debug=True)
