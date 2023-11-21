@@ -1,5 +1,5 @@
 import cv2
-WC = cv2.VideoCapture(1)
+WC = cv2.VideoCapture(0)
 while True:
     RET, F = WC.read()
     cv2.imshow("Live Feeds", F)
