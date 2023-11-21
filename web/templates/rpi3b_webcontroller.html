@@ -19,6 +19,38 @@
             <br><br>
             <h2><center><p>Date and time :  {{time}}</p></center></h2>
             <br><br><h2> Digital Inputs/Ouputs </h2>
+            <div id='sliderContainer'>
+                <center>
+                Pin GPIO2
+                <input type="range" id="sliderGPIO2" min="0" max="100" value="0">
+                <span id="valueGPIO2">0</span><br />
+                </center>
+    <!-- Répétez pour d'autres pins GPIO -->
+            </div>
+            
+            <script>
+                // Fonction pour envoyer la position du curseur
+                function sendSliderPosition(pin, value) {
+                    $.ajax({
+                        url: '/setPinValue',
+                        type: 'POST',
+                        data: { 'pin': pin, 'value': value },
+                        success: function(response) {
+                            // Traitez la réponse si nécessaire
+                        }
+                    });
+                }
+
+                // Écouteur d'événements pour les changements de curseurs
+                $('#sliderContainer input[type="range"]').on('input change', function() {
+                    var pin = this.id.replace('sliderGPIO', ''); // Extraire le numéro du pin
+                    var value = $(this).val(); // Valeur du curseur
+                    $('#valueGPIO' + pin).text(value); // Mise à jour de l'affichage de la valeur
+                    sendSliderPosition(pin, value); // Envoyer la valeur au serveur
+                   });
+            </script>
+
+
             <div id='btnContainer'>
                   <center>
                   Pin GPIO2
