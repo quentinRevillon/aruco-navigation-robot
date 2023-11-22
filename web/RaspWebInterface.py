@@ -23,7 +23,7 @@ def change_vertical_value():
     print(f"Received value: {value}")
     global vertical_speed
     global horizontal_speed
-    vertical_speed = value*0.5
+    vertical_speed = value
     Motor.Move(vertical_speed, horizontal_speed)
     return "Value set successfully"
 
@@ -39,7 +39,8 @@ def change_horizontal_value():
 
 @app.route('/stop', methods=['POST'])
 def stop():
-    Motor
+    Motor.MotorStop(0)
+    Motor.MotorStop(1)
 
     # Ici, vous pouvez ajouter le code pour contrôler les pins GPIO en fonction de la valeur
 
