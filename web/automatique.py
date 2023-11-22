@@ -35,86 +35,122 @@ from consignes import *
 Motor = motor.MotorDriver()
 import time as t
 
-flag1 = False
-flag2 = False
-h_s = 30
-v_s = 50
+h_s = 70
+v_s = 40
+dt = 0.05
 
-def avance_et_corrige(x, y):
+
+
+
+def avance_et_corrige(x, y, d):
     print("coordonées :", x, y)
-    if x <= (WIDTH * 0.1):
-        Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-        t.sleep(0.1)
+    if x <= (200 - 200 * d *0.01):
+        Motor.Move(vertical_speed=0, horizontal_speed=-h_s*0.6)
+        t.sleep(dt)
         Motor.Move(vertical_speed=0, horizontal_speed=0)
-        t.sleep(0.1)
-        print("tourne vers la droite")
-    if x >= (WIDTH * 0.9):
-        Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-        t.sleep(0.1)
-        Motor.Move(vertical_speed=0, horizontal_speed=0)
-        t.sleep(0.1)
+        t.sleep(dt)
         print("tourne vers la gauche")
+    if x >= (400 + 200*d*0.01):
+        Motor.Move(vertical_speed=0, horizontal_speed=h_s*0.6)
+        t.sleep(dt)
+        Motor.Move(vertical_speed=0, horizontal_speed=0)
+        t.sleep(dt)
+        print("tourne vers la droite")
     else:
         Motor.Move(vertical_speed=v_s, horizontal_speed=0)
         print("s'approche")
 
-while True :
-    id,corners = check()
-    if id!=None:
-        d = get_distance(corners)
-        x, y = get_middle(corners)
-        print("cible repéré à :", d, "m")
-        if not(flag1):
+def search(i, h_s):
+    
+    while True:
+        id, corners = check()
+        if id and id%2==1:
+            d = get_distance(corners)
+            x, y = get_middle(corners)
+            #print(x, y)
+            #continue
+            print("cible repéré à :", d, "m")
+            if d<=25:
 
-            if id%2==0 :
-                Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-                continue
-
-            elif d<=20:
-
-                flag1 = True
-                Motor.Move(vertical_speed=0, horizontal_speed=0)
-                t.sleep(1)
-                # Motor.Move(vertical_speed=-50, horizontal_speed=0)
-
-                Motor.Move(vertical_speed=-v_s, horizontal_speed=0)
-                print("fait demi-tour")
-                continue
+                Motor.MotorStop(0)
+                Motor.MotorStop(1)
+                t.sleep(2)
+                break
             else:
-                avance_et_corrige(x, y)
-
-
+                
+                avance_et_corrige(x, y, d)
         else:
-            if not(flag2):
-                if id%2 == 1:
-                    if d <= 100:
-                        Motor.Move(vertical_speed=-v_s, horizontal_speed=0)
-                        print("s'éloigne")
-                    else :
-                        
-                        Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-                        t.sleep(0.1)
-                        Motor.Move(vertical_speed=0, horizontal_speed=0)
-                        t.sleep(0.1)
-                else:
-                    if d<=20:
-                        flag2 = True
-                        Motor.MotorStop(0)
-                        Motor.MotorStop(1)
-                    else:
-                        avance_et_corrige(x, y)
-
-    else:
-        if not(flag1):
-            Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-            t.sleep(0.1)
-            Motor.Move(vertical_speed=0, horizontal_speed=0)
-            t.sleep(0.1)            
             
-
-        else:
-            Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-            t.sleep(0.1)
+            #continue
+            Motor.Move(0, h_s) 
+            t.sleep(dt)
             Motor.Move(vertical_speed=0, horizontal_speed=0)
-            t.sleep(0.1)
+            t.sleep(dt)
+
+search(1, h_s)
+Motor.Move(-v_s, 0)
+t.sleep(5)
+search(0, -h_s)
+
+
+#
+# while True :
+#     id,corners = check()
+#     if id!=None:
+#         d = get_distance(corners)
+#         x, y = get_middle(corners)
+#         print("cible repéré à :", d, "m")
+#         if not(flag1):
+#
+#             if id%2==0 :
+#                 Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+#                 continue
+#
+#             elif d<=20:
+#
+#                 flag1 = True
+#                 Motor.Move(vertical_speed=0, horizontal_speed=0)
+#                 t.sleep(1)
+#                 # Motor.Move(vertical_speed=-50, horizontal_speed=0)
+#
+#                 Motor.Move(vertical_speed=-v_s, horizontal_speed=0)
+#                 print("fait demi-tour")
+#                 continue
+#             else:
+#                 avance_et_corrige(x, y)
+#
+#
+#         else:
+#             if not(flag2):
+#                 if id%2 == 1:
+#                     if d <= 100:
+#                         Motor.Move(vertical_speed=-v_s, horizontal_speed=0)
+#                         print("s'éloigne")
+#                     else :
+#
+#                         Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+#                         t.sleep(dt)
+#                         Motor.Move(vertical_speed=0, horizontal_speed=0)
+#                         t.sleep(dt)
+#                 else:
+#                     if d<=20:
+#                         flag2 = True
+#                         Motor.MotorStop(0)
+#                         Motor.MotorStop(1)
+#                     else:
+#                         avance_et_corrige(x, y)
+#
+#     else:
+#         if not(flag1):
+#             Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+#             t.sleep(dt)
+#             Motor.Move(vertical_speed=0, horizontal_speed=0)
+#             t.sleep(dt)
+#
+#
+#         else:
+#             Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+#             t.sleep(dt)
+#             Motor.Move(vertical_speed=0, horizontal_speed=0)
+#             t.sleep(dt)
 

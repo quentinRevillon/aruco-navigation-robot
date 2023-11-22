@@ -44,8 +44,8 @@ def change_horizontal_value(data):
     Motor.Move(vertical_speed, horizontal_speed)
 
 @socketio.on('autoPilot')
-def launchAutoPilot():
-    import automatic
+def launchAutoPilot(mode):
+    import automatique
     print('je passe en mode auto')
     # Ici, vous pouvez ajouter le code pour contrôler les pins GPIO en fonction de la valeur
 
