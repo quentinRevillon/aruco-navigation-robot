@@ -5,23 +5,15 @@ from consignes import *
 
 while True :
     id,corners = check()
-    if id != None :
-        print("cible repéré à :",get_distance(corners),"m")
-        if id%2 == 0 :
-            while True :
-                _,corners2 = check()
-                d = get_distance(corners2)
-                if d<=20 :
-                    print("fait demi-tour")
-                    break
-                else :
-                    print("s'approche")
+    if id!=None:
+        d = get_distance(corners)
+        print("cible repéré à :",d,"m")
+        if d<=20 and id%2 == 0 :
+            print("fait demi-tour")
+            
+        elif d<=20 and id%2 == 1 :
+            print("s'arrête")
+            
         else :
-            while True :
-                _,corners2 = check()
-                if get_distance(corners2)<=20 :
-                    print("s'arrête")
-                    break
-                else :
-                    print("s'approche")
-        break
+            print("s'approche")
+            

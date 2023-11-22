@@ -26,5 +26,5 @@ def get_distance(corners):
     c1,c2,c3,c4 =corner[0],corner[1],corner[2],corner[3]
     S = dist(c1,c2)+dist(c2,c3)+dist(c3,c4)+dist(c4,c1)
     M = S/4
-    d = 12376*(M**-1,122)
+    d = 12376*(M**-1.222)
     return max(d,0)
