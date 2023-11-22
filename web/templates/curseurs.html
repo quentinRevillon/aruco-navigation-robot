@@ -59,6 +59,28 @@
             width: 300px; 
             height: 20px; 
         }
+        #autoPilotContainer {
+    position: absolute;
+    left: 50%; /* Centrer le bouton horizontalement */
+    top: 300px; /* Position verticale */
+    transform: translateX(-50%); /* Ajustement fin pour centrer */
+}
+
+/* Styles pour le bouton de pilotage automatique */
+#autoPilotButton {
+    width: 150px; /* Largeur du bouton */
+    height: 50px; /* Hauteur du bouton */
+    background-color: #4CAF50; /* Couleur du bouton */
+    color: white; /* Couleur du texte */
+    border: none;
+    border-radius: 5px; /* Bords arrondis */
+    font-size: 16px; /* Taille du texte */
+    cursor: pointer; /* Curseur en forme de pointeur */
+}
+
+#autoPilotButton:hover {
+    background-color: #45a049; /* Changement de couleur au survol */
+}
 
         
     </style>
@@ -75,6 +97,9 @@
     <div id="curseur2Container">
         <input type="range" id="horizontal" min="-100" max="100" value="0">
     </div>
+    <div id="autoPilotContainer">
+    <button id="autoPilotButton">Pilotage Automatique</button>
+</div>
 
     <script>
         
@@ -121,6 +146,12 @@
             sendSliderPosition("horizontal", this.value)
         })
         
+        const autoPilotButton = document.getElementById("autoPilotButton");
+
+        autoPilotButton.addEventListener("click", function() {
+        socket.emit("autoPilot", { mode: "on" }); // Envoyer l'information au serveur
+    // Vous pouvez ajouter ici d'autres actions à réaliser au clic sur le bouton
+});
       
 
 
