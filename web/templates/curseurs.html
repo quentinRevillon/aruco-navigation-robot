@@ -91,12 +91,13 @@
         vertical.addEventListener("change", function() {
             vertical.value = 0;
             sendSliderPosition("vertical", this.value);
-            sendSliderPosition("horizontal", this.value);
+            
 
         });
 
         horizontal.addEventListener("change", function() {
             horizontal.value = 0;
+	    sendSliderPosition("horizontal", this.value);
             
         });
 
