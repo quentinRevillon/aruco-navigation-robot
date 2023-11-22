@@ -2,13 +2,26 @@
 
 from consignes import *
 
-dico = {1:"gauche",2:"droite"}
-print("Begins automatic")
 
 while True :
-    id = check()
+    id,corners = check()
     if id != None :
-        for i in dico.keys():
-            if i == id :
-                print(dico[i])
-                #or do what you have to do with motors
+        print("cible repéré à :",get_distance(corners),"m")
+        if id%2 == 0 :
+            while True :
+                _,corners2 = check()
+                d = get_distance(corners2)
+                if d<=20 :
+                    print("fait demi-tour")
+                    break
+                else :
+                    print("s'approche")
+        else :
+            while True :
+                _,corners2 = check()
+                if get_distance(corners2)<=20 :
+                    print("s'arrête")
+                    break
+                else :
+                    print("s'approche")
+        break
