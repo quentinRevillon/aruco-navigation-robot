@@ -90,7 +90,9 @@
         // Réinitialiser les curseurs à leur valeur initiale lorsqu'ils sont relâchés (événement "change")
         vertical.addEventListener("change", function() {
             vertical.value = 0;
-        
+            sendSliderPosition("vertical", this.value);
+            sendSliderPosition("horizontal", this.value);
+
         });
 
         horizontal.addEventListener("change", function() {
@@ -98,11 +100,11 @@
             
         });
 
-            function sendSliderPosition(id, value) {
+            function sendSliderPosition(address, value) {
                     $.ajax({
-                        url: '/setPinValue',
+                        url: '/'+address,
                         type: 'POST',
-                        data: { 'id': id, 'value': value },
+                        data: { 'value': value },
                         success: function(response) {
                             // Traitez la réponse si nécessaire
                         }
@@ -112,11 +114,11 @@
 
 
         vertical.addEventListener("input", function(){
-            sendSliderPosition(this.id, this.value)
+            sendSliderPosition("vertical", this.value)
         })
 
         horizontal.addEventListener("input", function(){
-            sendSliderPosition(this.id, this.value)
+            sendSliderPosition("horizontal", this.value)
         })
         
       

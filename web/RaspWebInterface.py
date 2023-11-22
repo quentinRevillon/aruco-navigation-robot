@@ -2,6 +2,11 @@ import os
 import RPi.GPIO as GPIO
 from flask import Flask, render_template, Response, request
 import datetime
+from python_motorControl import motor
+
+Motor = motor.MotorDriver()
+vertical_speed = 0
+horizontal_speed = 0
 
 GPIO.setmode(GPIO.BCM)
 dataPin=[i for i in range(2,28)]
@@ -38,11 +43,27 @@ def index():
     #return render_template('rpi_index.html',**templateData)
     return render_template('curseurs.html',**templateData)
 
-@app.route('/setPinValue', methods=['POST'])
+@app.route('/vertical', methods=['POST'])
 def set_pin_value():
-    id = request.form['id']
+    # id = request.form['id']
     value = int(request.form['value'])
-    print(f"Received value: {value} for id: {id}")
+    print(f"Received value: {value}")
+    global vertical_speed
+    global horizontal_speed
+    vertical_speed = value
+    # Motor.Move(vertical_speed, horizontal_speed)
+
+@app.route('/horizontal', methods=['POST'])
+def set_pin_value():
+    # id = request.form['id']
+    value = int(request.form['value'])
+    print(f"Received value: {value}")
+    global horizontal_speed
+    global vertical_speed
+    horizontal_speed = value
+    # Motor.Move(vertical_speed, horizontal_speed)
+
+
 
     # Ici, vous pouvez ajouter le code pour contrôler les pins GPIO en fonction de la valeur
 
