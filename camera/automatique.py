@@ -32,22 +32,30 @@
 #!/usr/bin/env python3
 import motor
 from consignes import *
-Motor = motor.MotorDriver
+Motor = motor.MotorDriver()
 import time as t
 
-flag1 = false
-flag2 = false
+flag1 = False
+flag2 = False
+h_s = 30
+v_s = 50
 
 def avance_et_corrige(x, y):
     print("coordonées :", x, y)
-    if x <= (WIDTH * 0.33):
-        Motor.Move(vertical_speed=0, horizontal_speed=50)
+    if x <= (WIDTH * 0.1):
+        Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+        t.sleep(0.1)
+        Motor.Move(vertical_speed=0, horizontal_speed=0)
+        t.sleep(0.1)
         print("tourne vers la droite")
-    if x >= (WIDTH * 0.66):
-        Motor.Move(vertical_speed=0, horizontal_speed=-50)
+    if x >= (WIDTH * 0.9):
+        Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+        t.sleep(0.1)
+        Motor.Move(vertical_speed=0, horizontal_speed=0)
+        t.sleep(0.1)
         print("tourne vers la gauche")
     else:
-        Motor.Move(vertical_speed=50, horizontal_speed=0)
+        Motor.Move(vertical_speed=v_s, horizontal_speed=0)
         print("s'approche")
 
 while True :
@@ -59,17 +67,17 @@ while True :
         if not(flag1):
 
             if id%2==0 :
-                Motor.Move(vertical_speed=0, horizontal_speed=50)
+                Motor.Move(vertical_speed=0, horizontal_speed=h_s)
                 continue
 
             elif d<=20:
 
-                flag1 = true
+                flag1 = True
                 Motor.Move(vertical_speed=0, horizontal_speed=0)
-                sleep(1)
+                t.sleep(1)
                 # Motor.Move(vertical_speed=-50, horizontal_speed=0)
 
-                Motor.Move(vertical_speed=-50, horizontal_speed=0)
+                Motor.Move(vertical_speed=-v_s, horizontal_speed=0)
                 print("fait demi-tour")
                 continue
             else:
@@ -80,13 +88,17 @@ while True :
             if not(flag2):
                 if id%2 == 1:
                     if d <= 100:
-                        Motor.Move(vertical_speed=-50, horizontal_speed=0)
+                        Motor.Move(vertical_speed=-v_s, horizontal_speed=0)
                         print("s'éloigne")
                     else :
-                        Motor.Move(vertical_speed=0, horizontal_speed=-50)
+                        
+                        Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+                        t.sleep(0.1)
+                        Motor.Move(vertical_speed=0, horizontal_speed=0)
+                        t.sleep(0.1)
                 else:
                     if d<=20:
-                        flag2 = true
+                        flag2 = True
                         Motor.MotorStop(0)
                         Motor.MotorStop(1)
                     else:
@@ -94,7 +106,15 @@ while True :
 
     else:
         if not(flag1):
-            Motor.Move(vertical_speed=0, horizontal_speed=50)
+            Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+            t.sleep(0.1)
+            Motor.Move(vertical_speed=0, horizontal_speed=0)
+            t.sleep(0.1)            
+            
+
         else:
-            Motor.Move(vertical_speed=0, horizontal_speed=-50)
+            Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+            t.sleep(0.1)
+            Motor.Move(vertical_speed=0, horizontal_speed=0)
+            t.sleep(0.1)
 
