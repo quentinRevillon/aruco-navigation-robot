@@ -55,7 +55,7 @@ class MotorDriver():
             speed_left_motor = vertical_speed + horizontal_speed
 
             if speed_right_motor > 0 :
-                self.MotorRun(0, 'forward', speed_right_motor)
+                self.MotorRun(0, 'forward', speed_right_motor*1.025)
             else:
                 self.MotorRun(0, 'backward', -speed_right_motor)
 
