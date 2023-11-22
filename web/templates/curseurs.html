@@ -4,7 +4,8 @@
    
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
             
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
     <title>Contrôle des curseurs</title>
     <style>
@@ -77,12 +78,17 @@
 
     <script>
         
-
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
         const vertical = document.getElementById("vertical");
 
         
         const horizontal = document.getElementById("horizontal");
- 
+
+        socket.on('connect', function() {
+            socket.send('User has connected!');
+        });
+
+
         
 
         
@@ -97,18 +103,14 @@
 
         horizontal.addEventListener("change", function() {
             horizontal.value = 0;
+            sendSliderPosition("horizontal", this.value);
 	    
             
         });
 
             function sendSliderPosition(address, value) {
-                    $.ajax({
-                        url: '/'+address,
-                        type: 'POST',
-                        data: { 'value': value },
-                        success: function(response) {
-                            // Traitez la réponse si nécessaire
-                        }
+                socket.emit(address, {value:value})
+
                     });
                 }
 
