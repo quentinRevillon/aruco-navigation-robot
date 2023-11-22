@@ -78,7 +78,7 @@
 
     <script>
         
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var socket = io.connect('http://137.194.173.13:5000');
         const vertical = document.getElementById("vertical");
 
         
@@ -86,10 +86,7 @@
 
         socket.on('connect', function() {
             socket.send('User has connected!');
-        });
-
-
-        
+        });        
 
         
        
@@ -111,8 +108,8 @@
             function sendSliderPosition(address, value) {
                 socket.emit(address, {value:value})
 
-                    });
-                }
+                    };
+                
 
 
 

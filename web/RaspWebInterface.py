@@ -18,10 +18,14 @@ def index():
     #return render_template('rpi_index.html',**templateData)
     return render_template('curseurs.html')
 
+@socketio.on('connect')
+def connect():
+    print('someone is  connected')
+
 @socketio.on('vertical')
-def change_vertical_value():
+def change_vertical_value(data):
     # id = request.form['id']
-    value = int(request.form['value'])
+    value = int(data["value"])
     print(f"Received value: {value}")
     global vertical_speed
     global horizontal_speed
@@ -30,9 +34,9 @@ def change_vertical_value():
     return "Value set successfully"
 
 @socketio.on('horizontal')
-def change_horizontal_value():
+def change_horizontal_value(data):
     # id = request.form['id']
-    value = int(request.form['value'])
+    value = int(data["value"])
     print(f"Received value: {value}")
     global horizontal_speed
     global vertical_speed
