@@ -8,12 +8,20 @@ while True :
     if id!=None:
         d = get_distance(corners)
         print("cible repéré à :",d,"m")
-        if d<=20 and id%2 == 0 :
+        if (d<=20 and id%2 == 0) :
             print("fait demi-tour")
-            
-        elif d<=20 and id%2 == 1 :
+        if (d<=20 and id%2 == 1) :
             print("s'arrête")
-            
+        if (20<=d<=80) :
+            x,y = get_middle(corners)
+            print("coordonées :",x,y)
+            if x<=(WIDTH*0.33) :
+                 print("tourne vers la droite")
+            if x>=(WIDTH*0.66):
+                 print("tourne vers la gauche")
+            else :
+                print("s'approche")
         else :
             print("s'approche")
-            
+    else :
+         print("tourne sur lui-même")       

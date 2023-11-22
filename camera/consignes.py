@@ -4,6 +4,7 @@ import imutils
 from math import *
 
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
+WIDTH, HEIGHT = 320, 240
 
 def check():
     arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
@@ -28,3 +29,10 @@ def get_distance(corners):
     M = S/4
     d = 12376*(M**-1.222)
     return max(d,0)
+
+def get_middle(corners):
+    corner = corners[0][0]
+    c1,c2,c3,c4 =corner[0],corner[1],corner[2],corner[3]
+    x = (c1[0] + c3[0]) / 2
+    y = (c1[1] + c3[1]) / 2
+    return x,y
