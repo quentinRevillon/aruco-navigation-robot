@@ -12,7 +12,7 @@ while True :
             print("fait demi-tour")
         if (d<=20 and id%2 == 1) :
             print("s'arrête")
-        if (20<=d<=80) :
+        if (20<=d<=100) :
             x,y = get_middle(corners)
             print("coordonées :",x,y)
             if x<=(WIDTH*0.33) :
@@ -21,7 +21,7 @@ while True :
                  print("tourne vers la gauche")
             else :
                 print("s'approche")
-        else :
+        if d >= 100 :
             print("s'approche")
     else :
          print("tourne sur lui-même")       
