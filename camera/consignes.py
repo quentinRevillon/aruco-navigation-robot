@@ -4,7 +4,7 @@ import imutils
 from math import *
 
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
-WIDTH, HEIGHT = 320, 240
+WIDTH, HEIGHT = 640, 480
 
 def check():
     arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
@@ -36,3 +36,11 @@ def get_middle(corners):
     x = (c1[0] + c3[0]) / 2
     y = (c1[1] + c3[1]) / 2
     return x,y
+
+def test():
+    flux = cv2.VideoCapture(CAMERA_PATH)
+    _, img = flux.read()
+    cv2.imwrite("image_test.jpg",img)
+    print("image captured")
+    return
+
