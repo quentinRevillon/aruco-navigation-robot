@@ -4,7 +4,7 @@ import imutils
 from math import *
 
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
-WIDTH, HEIGHT = 320, 240
+WIDTH, HEIGHT = 640, 480
 
 def check():
     arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
