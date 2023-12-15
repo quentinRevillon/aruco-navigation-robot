@@ -36,3 +36,10 @@ def get_middle(corners):
     x = (c1[0] + c3[0]) / 2
     y = (c1[1] + c3[1]) / 2
     return x,y
+
+if __name__ == "__main__":
+    while True:
+        ids, corners = check()
+        if ids:
+            print(get_distance(corners))
+        
