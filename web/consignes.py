@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import cv2
+from cv2 import aruco
 import imutils
 from math import *
+import numpy as np
 
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
 WIDTH, HEIGHT = 640, 480
