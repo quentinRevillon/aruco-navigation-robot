@@ -18,17 +18,27 @@ def check():
     (corners, ids, rejected) = detector.detectMarkers(adjusted_img)
     return ids,corners
 
-def hello():
-    print("Hello World")
 
+# def get_distance(corners):
+#     corner = corners[0][0]
+#     c1,c2,c3,c4 =corner[0],corner[1],corner[2],corner[3]
+#     S = dist(c1,c2)+dist(c2,c3)+dist(c3,c4)+dist(c4,c1)
+#     M = S/4
+#     d = 12376*(M**-1.122)
+#     return max(d,0)
 
 def get_distance(corners):
-    corner = corners[0][0]
-    c1,c2,c3,c4 =corner[0],corner[1],corner[2],corner[3]
-    S = dist(c1,c2)+dist(c2,c3)+dist(c3,c4)+dist(c4,c1)
-    M = S/4
-    d = 12376*(M**-1.122)
-    return max(d,0)
+
+    matrix = np.array([[2.15047552e+03, 0.00000000e+00, 6.17240716e+02],
+                    [0.00000000e+00, 2.15215949e+03, 4.49841712e+02],
+                    [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+    distortionCoeffs = np.array([[ 1.14570525e-01, -1.65621384e+00, -2.70686270e-03, -1.52625388e-02,
+    3.58384525e+01]])
+
+    p = aruco.estimatePoseSingleMarkers(corners[0], 0.028, matrix, distortionCoeffs)
+
+    return np.linalg.norm(p[1])
 
 def get_middle(corners):
     corner = corners[0][0]
