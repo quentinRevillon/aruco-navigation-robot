@@ -5,20 +5,18 @@ import imutils
 from math import *
 import numpy as np
 
-CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
+
 WIDTH, HEIGHT = 640, 480
 
-def check():
-    arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
+def check(flux):
+    _, img = flux.read()
+    arucoDict = aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
     arucoParams = cv2.aruco.DetectorParameters()
     detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
-    flux = cv2.VideoCapture(CAMERA_PATH)
-    _, img = flux.read()
-    alpha = 2.5  # Contrast control (1.0 means no change)
-    beta = 40    # Brightness control (0 means no change)
-    adjusted_img = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
-    (corners, ids, rejected) = detector.detectMarkers(adjusted_img)
-    return ids,corners
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    corners, ids, rejected = detector.detectMarkers(img)
+    return corners, ids
 
 
 # def get_distance(corners):

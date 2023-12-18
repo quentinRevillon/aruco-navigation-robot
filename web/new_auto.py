@@ -8,28 +8,16 @@ v_s = 30
 dt = 0.05
 last_x = 0
 last_t = t.time()
-
-
-
-def corrige(x, y, d):
-    print("coordonées :", x, y)
-    if x <= WIDTH*0.4:
-        Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-        
-        print("tourne vers la gauche")
-    if x >= WIDTH*0.8:
-        Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-
-        print("tourne vers la droite")
-    else:
-        Motor.Move(vertical_speed=v_s, horizontal_speed=0)
-        print("s'approche")
+CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
+flux = cv2.VideoCapture(CAMERA_PATH)
 
 def search(i, h_s):
     
     while True:
-        id, corners = check()
-        if id and id%2==1:
+        corners, ids = check(flux)
+        global last_t
+        global last_x
+        if ids:
             d = get_distance(corners)
             x, y = get_middle(corners)
             last_x = x
@@ -52,6 +40,7 @@ def search(i, h_s):
                 else:
                     Motor.Move(vertical_speed=v_s, horizontal_speed=0)
         elif t.time()-last_t > 0.5:
+            last_t = t.time()
             Motor.MotorStop(0)
             Motor.MotorStop(1)
             #continue
@@ -61,7 +50,5 @@ def search(i, h_s):
                 Motor.Move(vertical_speed=0, horizontal_speed=h_s)
 
 search(1, h_s)
-Motor.Move(-v_s, 0)
-t.sleep(5)
-search(0, -h_s)
+
 
