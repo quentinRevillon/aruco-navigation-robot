@@ -6,49 +6,53 @@ import time as t
 h_s = 30
 v_s = 30
 dt = 0.05
-last_x = 0
-last_t = t.time()
+
+last_rotation = t.time()
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
 flux = cv2.VideoCapture(CAMERA_PATH)
 
-def search(i, h_s):
-    
+def search(i):
+    last_x = 0
     while True:
         corners, ids = check(flux)
-        global last_t
-        global last_x
-        if ids:
+        if ids[0] == i:
             d = get_distance(corners)
             x, y = get_middle(corners)
             last_x = x
-            #print(x, y)
-            #continue
-            print("cible repéré à :", d, "m")
-            if d<=25:
+            lastTimeSeenTarget = t.time()
+            last_rotation = t.time()
 
+            print("cible repéré à :", d, "m")
+            if d>0.20:
+                Motor.Move(vertical_speed=v_s, horizontal_speed=0)
+            else:
                 Motor.MotorStop(0)
                 Motor.MotorStop(1)
-                t.sleep(2)
+                print("robot arrivé")
                 break
-            else:
-                if x <= WIDTH*0.3:
-                    Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+                # if x <= WIDTH*0.3:
+                #     Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
 
-                if x >= WIDTH*0.7:
-                    Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+                # if x >= WIDTH*0.7:
+                #     Motor.Move(vertical_speed=0, horizontal_speed=h_s)
         
-                else:
-                    Motor.Move(vertical_speed=v_s, horizontal_speed=0)
-        elif t.time()-last_t > 0.5:
-            last_t = t.time()
-            Motor.MotorStop(0)
-            Motor.MotorStop(1)
-            #continue
-            if last_x<WIDTH/2:
-                Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-            else:
-                Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+                # else:
+                
+                    
+        elif t.time()-lastTimeSeenTarget > 0.5: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
 
-search(1, h_s)
+            if t.time() - last_rotation < 0.2: #regarde pendant 0.2 secondes
+                    Motor.MotorStop(0)
+                    Motor.MotorStop(1)
+
+            elif 0.2 < t.time() - last_rotation < 0.4: #tourne pendant 0.2 secondes
+                if last_x<WIDTH/2:
+                    Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+                else:
+                    Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+
+                last_rotation = t.time()
+
+search(64)
 
 
