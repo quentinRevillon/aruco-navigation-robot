@@ -10,12 +10,14 @@ dt = 0.05
 last_rotation = t.time()
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
 flux = cv2.VideoCapture(CAMERA_PATH)
-
+lastTimeSeenTarget = t.time()
+last_rotation = t.time()
 def search(i):
     last_x = 0
     while True:
         corners, ids = check(flux)
-        if ids[0] == i:
+        if ids:
+            print(ids[0][0])
             d = get_distance(corners)
             x, y = get_middle(corners)
             last_x = x
@@ -23,7 +25,7 @@ def search(i):
             last_rotation = t.time()
 
             print("cible repéré à :", d, "m")
-            if d>0.20:
+            if d>0.24:
                 Motor.Move(vertical_speed=v_s, horizontal_speed=0)
             else:
                 Motor.MotorStop(0)
@@ -39,7 +41,7 @@ def search(i):
                 # else:
                 
                     
-        elif t.time()-lastTimeSeenTarget > 0.5: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
+        elif t.time()-lastTimeSeenTarget > 0.1: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
 
             if t.time() - last_rotation < 0.2: #regarde pendant 0.2 secondes
                     Motor.MotorStop(0)
