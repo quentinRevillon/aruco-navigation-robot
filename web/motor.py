@@ -54,10 +54,10 @@ class MotorDriver():
 
             if horizontal_speed > 0:                
                 speed_right_motor = vertical_speed - horizontal_speed 
-                speed_left_motor = vertical_speed
+                speed_left_motor = vertical_speed + horizontal_speed
 
             else:
-                speed_right_motor = vertical_speed
+                speed_right_motor = vertical_speed - horizontal_speed
                 speed_left_motor = vertical_speed + horizontal_speed
  
             if speed_right_motor > 0 :
