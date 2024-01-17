@@ -70,6 +70,9 @@ class MotorDriver():
             else:
                 self.MotorRun(0, 'backward', -speed_left_motor*1.025)
 
+    def Stop(self):
+        self.MotorStop(0)
+        self.MotorStop(1)
 
 
 

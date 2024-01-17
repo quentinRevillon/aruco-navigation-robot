@@ -18,6 +18,51 @@ def index_of_aruco(ids, i):
             return index
     return False
 
+
+
+def search_balise(i, last_x):
+    
+    last_rotation = t.time()
+
+    while True:
+        corners, ids = check(flux)
+        if type(ids) == np.ndarray and i in ids.flatten():
+            return True
+        else:
+            if t.time() - last_rotation < 0.1: #regarde pendant 0.2 secondes
+                    Motor.MotorStop(0)
+                    Motor.MotorStop(1)
+
+            else: #tourne pendant 0.2 secondes
+                if last_x<WIDTH/2:
+                    Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+                else:
+                    Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+
+                t.sleep(0.05)
+                last_rotation = t.time()
+def charge():
+    lastTimeSeenTarget = t.time()
+    while True:
+        corners, ids = check(flux)
+
+        if (type(ids) == np.ndarray and i in ids.flatten()) or  t.time() - lastTimeSeenTarget < 0.1: #ça fait plus d'un dixième de seconde qu'on ne voit plus la balise, on s'arrête
+            Motor.Move(vertical_speed=v_s, horizontal_speed=0)
+        else:
+            Motor.Stop()
+
+def ajuste(i):
+    while True:
+        corners, ids = check(flux)
+        if type(ids) == np.ndarray and i in ids.flatten():
+            x, y = get_middle(corners)
+            if x < WIDTH*0.4:
+                pass
+            
+
+
+            
+
 def search(i):
 
     lastTimeSeenTarget = t.time()
@@ -58,7 +103,7 @@ def search(i):
                     
         elif t.time()-lastTimeSeenTarget > 0.1: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
 
-            if t.time() - last_rotation < 0.4: #regarde pendant 0.2 secondes
+            if t.time() - last_rotation < 0.4: #regarde pendant 0.4 secondes
                     Motor.MotorStop(0)
                     Motor.MotorStop(1)
 
@@ -69,6 +114,8 @@ def search(i):
                     Motor.Move(vertical_speed=0, horizontal_speed=h_s)
 
                 t.sleep(0.05)
+                Motor.MotorStop(0)
+                Motor.MotorStop(1)
                 last_rotation = t.time()
 
 search(0)
