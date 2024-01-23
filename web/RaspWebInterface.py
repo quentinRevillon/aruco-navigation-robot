@@ -17,7 +17,7 @@ def index():
     
     #return render_template('rpi_index.html',**templateData)
     return render_template('curseurs.html')
-
+            
 @socketio.on('connect')
 def connect():
     print('someone is  connected')
