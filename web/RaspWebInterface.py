@@ -5,7 +5,7 @@ from flask import Flask, render_template, Response, request
 from flask_socketio import SocketIO
 
 import datetime
-import motor
+import motor_manuel
 Motor = motor.MotorDriver()
 vertical_speed = 0
 horizontal_speed = 0
