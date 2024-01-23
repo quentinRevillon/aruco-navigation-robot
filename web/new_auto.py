@@ -118,13 +118,16 @@ def search(i):
                 Motor.MotorStop(1)
                 last_rotation = t.time()
 
-search(0)
-tourne(120)
-deplacement(1)
+search(2)
 search(4)
-tourne(120)
-deplacement(1)
-search(9)
+search(3)
+search(5)
+#tourne(120)
+#deplacement(1)
+#search(4)
+#tourne(120)
+#deplacement(1)
+#search(9)
 
 
 
