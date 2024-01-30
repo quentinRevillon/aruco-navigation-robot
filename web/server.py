@@ -4,14 +4,21 @@ import json
 import time
 
 
-MASTERROBOT = {"robots" : {11 : None, 12 : None, 13 : None, 14: None, 15 : None}, "balises" : None}
+MASTERROBOT = {"robots" : {
+    11 : {"etape": 0, "go": False}, 
+    12 : {"etape": 0, "go": False}, 
+    13 : {"etape": 0, "go": False}, 
+    14 : {"etape": 0, "go": False}, 
+    15 : {"etape": 0, "go": False}, 
+}, "balises" : None}
 
 ORDRE_ROBOTS = [15, 14, 13, 12, 11]
 I_ROBOT = 0 # indexe du robot dans la liste précédente
 
 
 async def handler(websocket):
-    global N_ROBOT # Le robot qui a le droit d'avancer
+    global I_ROBOT # Le robot qui a le droit d'avancer
+    global MASTERROBOT
 
     id = int(await websocket.recv())
 
@@ -26,10 +33,10 @@ async def handler(websocket):
 
     while True:
         robot_to_master_m = await websocket.recv()
-        robot_to_master = await websocket.loads(robot_to_master_m)
-        MASTERROBOT["robots"][id]["etape"] = request["etape"]
+        robot_to_master = json.loads(robot_to_master_m)
+        MASTERROBOT["robots"][id]["etape"] = robot_to_master["etape"]
 
-        if ORDRE_ROBOTS[N_ROBOT] == id:
+        if ORDRE_ROBOTS[I_ROBOT] == id:
             if robot_to_master["etape"] == 8:
                 # le robot est arrivé
                 I_ROBOT += 1
@@ -50,7 +57,7 @@ async def handler(websocket):
     return None
 
 
-start_server = websockets.serve(handler, "localhost", 9000, ping_timeout = 600)
+start_server = websockets.serve(handler, "0.0.0.0", 9000, ping_timeout = 600)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 
