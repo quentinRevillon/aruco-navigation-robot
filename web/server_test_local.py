@@ -11,6 +11,7 @@ ordre_balises_example = {
         5: 2,
         10: 0,
 }
+ordre_balises_example = {4:1,9:0,3:-1,2:2,0:3,5:-2,7:-3}
 
 
 MASTERROBOT = {"robots" : {

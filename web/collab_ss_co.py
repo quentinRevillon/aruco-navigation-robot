@@ -117,5 +117,5 @@ async def run():
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(run())
  
-
-run()
+# ordre = [2,6,10]
+# run()
