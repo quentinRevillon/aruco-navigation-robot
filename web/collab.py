@@ -32,7 +32,7 @@ async def run():
     #   - Attendre le go
     print("On attend de pouvoir partir")
     while not await pr.can_go(ws, 0, 0):
-        time.sleep(0.2)
+        time.sleep(0.5)
 
     #   - Aller au milieu
     print("On avance au milieu")
@@ -41,9 +41,9 @@ async def run():
     #   - Chercher notre balise grace a l'information donnée
 
     if position[0] < 0:
-        tourne(-45*position[0], 1)
+        tourne(-45*position[0], -1)
     else:
-        tourne(45*position[0], -1)
+        tourne(45*position[0], 1)
     print("On s'oriente vers la première balise")
 
 
@@ -67,14 +67,14 @@ async def run():
         sens_rota = 1
     print("On s'oriente vers la deuxième balise")
     
-    tourne(abs(angle), -sens_rota)
+    tourne(abs(angle), sens_rota)
     
     
 
     #   - Attendre le go
     while not await pr.can_go(ws, 2, ordre[0]):
         print("On attend de pouvoir partir")
-        time.sleep(0.2)
+        time.sleep(0.5)
 
     #   - Aller à la balise
     await pr.send_signal(ws, 3, ordre[0])
@@ -92,12 +92,12 @@ async def run():
     else:
         sens_rota = 1
     print("On s'oriente vers la troisième balise")
-    tourne(abs(angle), -sens_rota)
+    tourne(abs(angle), sens_rota)
 
     #   - Attendre le go
     while not await pr.can_go(ws, 4, ordre[1]):
         print("On attend de pouvoir partir")
-        time.sleep(0.2)
+        time.sleep(0.5)
 
     #   - Aller à la balise
     await pr.send_signal(ws, 5, ordre[1])
@@ -115,12 +115,12 @@ async def run():
     else:
         sens_rota = 1
     print("On s'oriente vers l'arrivé*")
-    tourne(abs(angle), -sens_rota)
+    tourne(abs(angle), sens_rota)
 
     #   - Attendre le go
     while not await pr.can_go(ws, 6, ordre[2]):
         print("On attend de pouvoir partir")
-        time.sleep(0.2)
+        time.sleep(0.5)
 
     #   - Aller à l'arrivé
     await pr.send_signal(ws, 7, ordre[1])

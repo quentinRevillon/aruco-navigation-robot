@@ -88,7 +88,7 @@ def search(i):
             print("cible repéré à :", d, "m")
             dt_rot = 0.05
             
-            if d>0.24:
+            if d>0.26:
                 Motor.Move(vertical_speed=v_s, horizontal_speed=0)
             else:
                 Motor.MotorStop(0)
