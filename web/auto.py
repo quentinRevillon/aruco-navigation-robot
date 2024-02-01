@@ -63,6 +63,7 @@ def ajuste(i):
             
 
 def search(i):
+    dt_rot = 0.2
     h_s = 30
     v_s = 50
     lastTimeSeenTarget = t.time()
@@ -85,6 +86,8 @@ def search(i):
             last_rotation = t.time()
 
             print("cible repéré à :", d, "m")
+            dt_rot = 0.05
+            
             if d>0.24:
                 Motor.Move(vertical_speed=v_s, horizontal_speed=0)
             else:
@@ -113,7 +116,7 @@ def search(i):
                 else:
                     Motor.Move(vertical_speed=0, horizontal_speed=h_s)
 
-                t.sleep(0.5)
+                t.sleep(dt_rot)
                 Motor.MotorStop(0)
                 Motor.MotorStop(1)
                 last_rotation = t.time()
