@@ -54,11 +54,12 @@ async def run():
     await pr.send_signal(ws, 1, ordre[0])
     deplacement(1)
     print("On part vers la première balise")
-    search(ordre[0])
+    corners = search(ordre[0])
+    a = estimation_angle_aruco(corners)
     #   - Envoyer un signal quand on est arrivé
     await pr.send_signal(ws, 2, ordre[0])
     #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = fc.angle_ij(position[0], position[1], 0.3, 0)
+    angle = fc.angle_ij(position[0], position[1], 0.3, a)
     # On peut prendre en compte le fait qu'on connait l'angle d'arrivé donc ne
     # pas se placer a 0.3m (y a la fontion sur le git)
     if angle < 0:
@@ -80,13 +81,14 @@ async def run():
     await pr.send_signal(ws, 3, ordre[0])
     print("On part vers la deuxième balise")
     deplacement(1)
-    search(ordre[1])
+    corners = search(ordre[1])
+    a = estimation_angle_aruco(corners)
 
     #   - Envoyer un signal quand on est arrivé
     await pr.send_signal(ws, 4, ordre[1])
 
     #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = fc.angle_ij(position[1], position[2], 0.3, 0)
+    angle = fc.angle_ij(position[1], position[2], 0.3, a)
     if angle < 0:
         sens_rota = -1
     else:
@@ -103,13 +105,13 @@ async def run():
     await pr.send_signal(ws, 5, ordre[1])
     print("On part vers la troisième balise")
     deplacement(1)
-    search(ordre[2])
+    corners = search(ordre[2])
 
     #   - Envoyer un signal quand on est arrivé
     await pr.send_signal(ws, 6, ordre[2])
 
     #   - S'orienter vers l'arrivée
-    angle = fc.angle_ij(position[2], -3, 0.3, 0)
+    angle = fc.angle_ij(position[2], -3, 0.3, a)
     if angle < 0:
         sens_rota = -1
     else:

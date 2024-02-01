@@ -94,6 +94,7 @@ def search(i):
                 Motor.MotorStop(0)
                 Motor.MotorStop(1)
                 print("robot arrivé")
+                return corners
                 break
                 # if x <= WIDTH*0.3:
                 #     Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
