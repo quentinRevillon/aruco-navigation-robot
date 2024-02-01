@@ -24,9 +24,10 @@ v = 0.2 #en m/s
 async def run():
     # ETAPES POUR TOUTES LES VOITURES (sauf la première):*
     #   - Ouvrir la connexion
-    ws = await pr.open_connection(14)
+    ws = await pr.open_connection(13)
     balises = await pr.get_ordre_balise(ws)
-    position = [balises[b] for b in ordre]
+    position = [balises[str(b)] for b in ordre]
+    print(position)
 
     #   - Attendre le go
     print("On attend de pouvoir partir")
@@ -35,25 +36,27 @@ async def run():
 
     #   - Aller au milieu
     print("On avance au milieu")
-    deplacement(2.5)
+    #deplacement(2.5)
 
     #   - Chercher notre balise grace a l'information donnée
-    if position[ordre[0]] < 0:
-        tourne(-45*position[0])
+
+    if position[0] < 0:
+        tourne(-45*position[0], -1)
     else:
-        tourne(45*position[0])
+        tourne(45*position[0], 1)
     print("On s'oriente vers la première balise")
+
 
     #       - Si problème de balise non trouvée chercher normalement
 
     #   - Aller à la balise
 
-    await pr.send_signal(ws, 1, L[0])
+    await pr.send_signal(ws, 1, ordre[0])
     deplacement(1)
     print("On part vers la première balise")
     search(ordre[0])
     #   - Envoyer un signal quand on est arrivé
-    await pr.send_signal(ws, 2, L[0])
+    await pr.send_signal(ws, 2, ordre[0])
     #   - Calculer l'angle avec un decalage pour arriver en face
     angle = fc.angle_ij(position[0], position[1], 0.3, 0)
     # On peut prendre en compte le fait qu'on connait l'angle d'arrivé donc ne
@@ -63,7 +66,10 @@ async def run():
     else:
         sens_rota = 1
     print("On s'oriente vers la deuxième balise")
-    tourne(sens_rota*abs(angle))
+    
+    tourne(abs(angle), sens_rota)
+    
+    
 
     #   - Attendre le go
     while not await pr.can_go(ws, 2, ordre[0]):
@@ -86,7 +92,7 @@ async def run():
     else:
         sens_rota = 1
     print("On s'oriente vers la troisième balise")
-    tourne(sens_rota*abs(angle))
+    tourne(abs(angle), sens_rota)
 
     #   - Attendre le go
     while not await pr.can_go(ws, 4, ordre[1]):
@@ -109,7 +115,7 @@ async def run():
     else:
         sens_rota = 1
     print("On s'oriente vers l'arrivé*")
-    tourne(sens_rota*abs(angle))
+    tourne(abs(angle), sens_rota)
 
     #   - Attendre le go
     while not await pr.can_go(ws, 6, ordre[2]):
@@ -131,7 +137,7 @@ async def run():
     # POUR TOUTES LES VOITURES ENVOYER DES SIGNAUX DE VIES
 
 if __name__ == "__main__":
-    ordre = [2,5,10]
+    ordre = [10, 5, 3]
     asyncio.get_event_loop().run_until_complete(run())
  
 # ordre = [2,6,10]

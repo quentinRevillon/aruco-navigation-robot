@@ -15,10 +15,10 @@ def deplacement(dist):
     return
 
 
-def tourne(alpha):
+def tourne(alpha, sens_rota):
     N = int(alpha/4.6)
     for i in range(N):
-        Motor.Move(vertical_speed=0, horizontal_speed=h_s)
+        Motor.Move(vertical_speed=0, horizontal_speed=h_s * sens_rota)
         t.sleep(dt)
         Motor.Move(vertical_speed=0, horizontal_speed=0)
         t.sleep(dt)

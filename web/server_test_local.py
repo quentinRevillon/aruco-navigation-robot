@@ -3,15 +3,14 @@ import asyncio
 import json
 
 ordre_balises_example = {
-        0: 1,
+        3: 1,
         1: 3,
-        2: -2,
-        3: -1,
+        2: -1,
+        0: 2,
         4: -3,
-        5: 2,
+        5: -2,
         10: 0,
 }
-ordre_balises_example = {4:1,10:0,5:-1,2:2,0:3,2:-2,7:-3}
 
 
 MASTERROBOT = {"robots" : {
@@ -24,7 +23,7 @@ MASTERROBOT = {"robots" : {
 
 
 # TODO: mettre dans la liste son prore identifiant
-ORDRE_ROBOTS = [15]
+ORDRE_ROBOTS = [13]
 I_ROBOT = 0 # indexe du robot dans la liste précédente
 
 
