@@ -19,12 +19,13 @@ v_s = 30 #vitesse avance
 dt = 0.05
 v = 0.2 #en m/s
     
-ordre = [2, 0, 5]
+ordre = [2, 0, 4]
 
 async def run():
+    
     # ETAPES POUR TOUTES LES VOITURES (sauf la première):*
     #   - Ouvrir la connexion
-    balises = {0:1,1:0,2:-1,3:2,4:3,5:2,6:-2,7:-3}
+    balises = {4:1,9:0,3:-1,2:2,0:3,5:-2,7:-3}
     position = [balises[b] for b in ordre]
 
     #   - Attendre le go
@@ -32,7 +33,7 @@ async def run():
 
     #   - Aller au milieu
     print("On avance au milieu")
-    deplacement(2.5)
+#    deplacement(2.5)
 
     #   - Chercher notre balise grace a l'information donnée
     if position[ordre[0]] < 0:
@@ -50,7 +51,7 @@ async def run():
     search(ordre[0])
     #   - Envoyer un signal quand on est arrivé
     #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = fc.angle_ij(position[0], position[1], 0.3, 0)
+    angle = angle_ij(position[0], position[1], 0.3, 0)
     # On peut prendre en compte le fait qu'on connait l'angle d'arrivé donc ne
     # pas se placer a 0.3m (y a la fontion sur le git)
     if angle < 0:
@@ -64,13 +65,14 @@ async def run():
     print("On attend de pouvoir partir")
 
     #   - Aller à la balise
-    print("On part vers la deuxième balise")
+    print("On pat vers la deuxième balise")
+    deplacement(1)
     search(ordre[1])
 
     #   - Envoyer un signal quand on est arrivé
 
     #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = fc.angle_ij(position[1], position[[2], 0.3, 0)
+    angle = angle_ij(position[1], position[2], 0.3, 0)
     if angle < 0:
         sens_rota = -1
     else:
@@ -83,12 +85,13 @@ async def run():
 
     #   - Aller à la balise
     print("On part vers la troisième balise")
+    deplacement(1)
     search(ordre[2])
 
     #   - Envoyer un signal quand on est arrivé
 
     #   - S'orienter vers l'arrivée
-    angle = fc.angle_ij(position[0], position[1], 0.3, 0)
+    angle = angle_ij(position[0], position[1], 0.3, 0)
     if angle < 0:
         sens_rota = -1
     else:

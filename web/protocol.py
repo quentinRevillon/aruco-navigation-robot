@@ -52,7 +52,7 @@ async def get_ordre_balise(websocket:websockets.WebSocketClientProtocol):
     ...
 
 
-async def send_signal(websocket:websockets.WebSocketClientProtocol, phase:int, balise:int|None = None):
+async def send_signal(websocket:websockets.WebSocketClientProtocol, phase:int, balise:int):
     """
     :param websocket: La clé de connection au "master"
     :param phase: La phase dans laquelle on est
