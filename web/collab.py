@@ -1,5 +1,6 @@
 import motor
 import time as t
+import asyncio
 Motor = motor.MotorDriver()
 
 from fonctions_communes import *
@@ -130,7 +131,7 @@ async def run():
     # POUR TOUTES LES VOITURES ENVOYER DES SIGNAUX DE VIES
 
 if __name__ == "__main__":
-    ordre = [2,6,10]
+    ordre = [2,5,10]
     asyncio.get_event_loop().run_until_complete(run())
  
 # ordre = [2,6,10]
