@@ -5,10 +5,7 @@ Motor = motor.MotorDriver()
 from fonctions_communes import *
 from acquisition_donnees import *
 from auto import *
-<<<<<<< HEAD
 from protocol import *
-=======
->>>>>>> 83f18a20101ae2de2d6457a9b706c06172fb9712
 
 import cv2
 
@@ -22,7 +19,6 @@ v_s = 30 #vitesse avance
 dt = 0.05
 v = 0.2 #en m/s
     
-<<<<<<< HEAD
 async def run():
     # ETAPES POUR TOUTES LES VOITURES (sauf la première):*
     #   - Ouvrir la connexion
@@ -136,39 +132,3 @@ if __name__ == "__main__":
 ordre = [2,6,10]
 position = {6: '-3', 3: '-2', 5: '-1', 10: '0', 0: '1', 2: '2', 4: '3'}L = [-2,1,-1]
 run()
-=======
-def deplacement(dist):
-    Motor.Move(vertical_speed=v_s, horizontal_speed=0)
-    t.sleep(dist/v)
-    Motor.MotorStop(0)
-    Motor.MotorStop(1)
-    return
-
-
-def tourne(alpha):
-    N = int(alpha/4.7)
-    for i in range(N):
-        Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-        t.sleep(dt)
-        Motor.Move(vertical_speed=0, horizontal_speed=0)
-        t.sleep(dt)
-    return
-
-def parcours(L):
-    '''L = liste de marqueurs à visiter'''
-    deplacement(3) #Avance de 3 m = vers le centre
-    L = [0] + L
-    if search_balise(L[0]) :
-        for k in range(len(L)-1):
-            i,j = L[k],L[k+1]
-            cap = cv2.VideoCapture(CAMERA_PATH)
-            Data = acquisition_donnees(cap) #[corners,ids,d,ecart_centre,ecart_centre_norme,angle]
-            alpha = angle_ij(i,j,Data[2],Data[6])
-            tourne(alpha)
-            search(dico[j])
-            break
-
-dico = {"-3": 6, "-2" : 3, "-1" : 5, "0" : 10, "1" : 0, "2" : 2, "3" : 4}
-L = [-2,1,-1]
-parcours(L)
->>>>>>> 83f18a20101ae2de2d6457a9b706c06172fb9712

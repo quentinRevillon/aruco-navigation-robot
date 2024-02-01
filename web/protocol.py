@@ -3,7 +3,7 @@ import websockets
 import json    
 import time
 
-# MASTER_ADRESSE = "ws://robotpi15.enst.fr:9000"
+# MASTER_ADRESSE = "ws://robotpi-15.enst.fr:9000"
 MASTER_ADRESSE = "ws://localhost:9000"
 ID = -1
 
