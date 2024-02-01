@@ -3,8 +3,8 @@ import websockets
 import json    
 import time
 
-# MASTER_ADRESSE = "ws://robotpi-15.enst.fr:9000"
-MASTER_ADRESSE = "ws://localhost:9000"
+MASTER_ADRESSE = "ws://robotpi-13.enst.fr:9000"
+#MASTER_ADRESSE = "ws://localhost:9000"
 ID = -1
 
 
@@ -52,7 +52,7 @@ async def get_ordre_balise(websocket:websockets.WebSocketClientProtocol):
     ...
 
 
-async def send_signal(websocket:websockets.WebSocketClientProtocol, phase:int, balise:int):
+async def send_signal(websocket:websockets.WebSocketClientProtocol, phase:int, balise:int = None):
     """
     :param websocket: La clé de connection au "master"
     :param phase: La phase dans laquelle on est

@@ -2,7 +2,6 @@ import websockets
 import asyncio
 import json
 
-
 ordre_balises_example = {
         0: 1,
         1: 3,
@@ -13,6 +12,7 @@ ordre_balises_example = {
         10: 0,
 }
 
+
 MASTERROBOT = {"robots" : {
     11 : {"etape": 0, "go": False}, 
     12 : {"etape": 0, "go": False}, 
@@ -21,15 +21,19 @@ MASTERROBOT = {"robots" : {
     15 : {"etape": 0, "go": False}, 
 }, "balises" : ordre_balises_example}
 
-CAN_GO = False
+
+# TODO: mettre dans la liste son prore identifiant
+ORDRE_ROBOTS = [15]
+I_ROBOT = 0 # indexe du robot dans la liste précédente
 
 
 async def handler(websocket):
+    global I_ROBOT # Le robot qui a le droit d'avancer
     global MASTERROBOT
-    global CAN_GO
 
     id = int(await websocket.recv())
-    print(f"je suis le robot numéro {id}")
+
+    print(f"le robot {id} est connecte")
 
     if id == 15:
         balises_m = await websocket.recv()
@@ -44,29 +48,22 @@ async def handler(websocket):
         robot_to_master_m = await websocket.recv()
         robot_to_master = json.loads(robot_to_master_m)
         etape = robot_to_master["etape"]
-        balise = robot_to_master["balise"]
         MASTERROBOT["robots"][id]["etape"] = etape
+        print(f"robot {id} dans l'etape {etape}")
 
-        if balise is not None:
-            print(f"robot vient de valider {balise}")
+        if ORDRE_ROBOTS[I_ROBOT] == id:
+            if robot_to_master["etape"] == 8:
+                # le robot est arrivé
+                I_ROBOT += 1
+                if I_ROBOT == 5:
+                    await websocket.close()
+                    return
 
-        print(f"robot à l'etape {etape}")
+            MASTERROBOT["robots"][id]["go"] = True
 
-        if etape == 8:
-            await websocket.close()
-            return
-
-        if etape % 2 == 0:
-            # le robot attend l'ordre de départ
-            if CAN_GO:
-                MASTERROBOT["robots"][id]["go"] = True
-                # CAN_GO sera mis à True dans la fonction `read_terminal_input`
-                CAN_GO = False
-
-            else:
-                MASTERROBOT["robots"][id]["go"] = False
-
-
+        else:
+            MASTERROBOT["robots"][id]["go"] = False
+        
         MASTERROBOT_m = json.dumps(MASTERROBOT)
         await websocket.send(MASTERROBOT_m)
 
@@ -75,21 +72,8 @@ async def handler(websocket):
     return None
 
 
-async def read_terminal_input():
-    global CAN_GO
-    while True:
-        input("taper entrer pour dire au robot de continuer")
-        CAN_GO = True
+start_server = websockets.serve(handler, "0.0.0.0", 9000, ping_timeout = 600)
 
+asyncio.get_event_loop().run_until_complete(start_server)
 
-start_server = websockets.serve(handler, "localhost", 9000, ping_timeout = 600)
-
-async def main():
-    await asyncio.gather(
-        start_server,
-        read_terminal_input()
-    )
-
-asyncio.run(main())
-
-
+asyncio.get_event_loop().run_forever()

@@ -3,9 +3,10 @@ import time as t
 Motor = motor.MotorDriver()
 
 from fonctions_communes import *
+import fonctions_communes as fc
 from acquisition_donnees import *
 from auto import *
-from protocol import *
+import protocol as pr
 
 import cv2
 
@@ -53,7 +54,7 @@ async def run():
     #   - Envoyer un signal quand on est arrivé
     await pr.send_signal(ws, 2, L[0])
     #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = angle_ij(position[0], position[1], 0.3, 0)
+    angle = fc.angle_ij(position[0], position[1], 0.3, 0)
     # On peut prendre en compte le fait qu'on connait l'angle d'arrivé donc ne
     # pas se placer a 0.3m (y a la fontion sur le git)
     if angle < 0:
@@ -78,7 +79,7 @@ async def run():
     await pr.send_signal(ws, 4, ordre[1])
 
     #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = angle_ij(position[1], position[2], 0.3, 0)
+    angle = fc.angle_ij(position[1], position[2], 0.3, 0)
     if angle < 0:
         sens_rota = -1
     else:
@@ -131,6 +132,6 @@ async def run():
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(run())
  
-ordre = [2,6,10]
-position = {6: '-3', 3: '-2', 5: '-1', 10: '0', 0: '1', 2: '2', 4: '3'}L = [-2,1,-1]
-run()
+# ordre = [2,6,10]
+# position = {6: '-3', 3: '-2', 5: '-1', 10: '0', 0: '1', 2: '2', 4: '3'}L = [-2,1,-1]
+# run()
