@@ -36,14 +36,14 @@ async def run():
 
     #   - Aller au milieu
     print("On avance au milieu")
-    #deplacement(2.5)
+    deplacement(2.5)
 
     #   - Chercher notre balise grace a l'information donnée
 
     if position[0] < 0:
-        tourne(-45*position[0], -1)
+        tourne(-45*position[0], 1)
     else:
-        tourne(45*position[0], 1)
+        tourne(45*position[0], -1)
     print("On s'oriente vers la première balise")
 
 
@@ -67,7 +67,7 @@ async def run():
         sens_rota = 1
     print("On s'oriente vers la deuxième balise")
     
-    tourne(abs(angle), sens_rota)
+    tourne(abs(angle), -sens_rota)
     
     
 
@@ -92,7 +92,7 @@ async def run():
     else:
         sens_rota = 1
     print("On s'oriente vers la troisième balise")
-    tourne(abs(angle), sens_rota)
+    tourne(abs(angle), -sens_rota)
 
     #   - Attendre le go
     while not await pr.can_go(ws, 4, ordre[1]):
@@ -109,13 +109,13 @@ async def run():
     await pr.send_signal(ws, 6, ordre[2])
 
     #   - S'orienter vers l'arrivée
-    angle = fc.angle_ij(position[0], position[1], 0.3, 0)
+    angle = fc.angle_ij(position[2], -3, 0.3, 0)
     if angle < 0:
         sens_rota = -1
     else:
         sens_rota = 1
     print("On s'oriente vers l'arrivé*")
-    tourne(abs(angle), sens_rota)
+    tourne(abs(angle), -sens_rota)
 
     #   - Attendre le go
     while not await pr.can_go(ws, 6, ordre[2]):
@@ -137,7 +137,7 @@ async def run():
     # POUR TOUTES LES VOITURES ENVOYER DES SIGNAUX DE VIES
 
 if __name__ == "__main__":
-    ordre = [10, 5, 3]
+    ordre = [2, 6, 4]
     asyncio.get_event_loop().run_until_complete(run())
  
 # ordre = [2,6,10]

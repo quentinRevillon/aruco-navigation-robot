@@ -3,13 +3,13 @@ import asyncio
 import json
 
 ordre_balises_example = {
-        3: 1,
         1: 3,
-        2: -1,
-        0: 2,
-        4: -3,
-        5: -2,
+        2: 2,
+        3: 1,
         10: 0,
+        6: -1,
+        4: -2,
+        5: -3,
 }
 
 
