@@ -5,9 +5,11 @@ import time as t
 h_s = 30
 v_s = 30
 dt = 0.05
-v = 0.2 #en m/s
+v = 0.46 #en m/s
     
 def deplacement(dist):
+    v_s = 50
+    v = 0.33
     Motor.Move(vertical_speed=v_s, horizontal_speed=0)
     t.sleep(dist/v)
     Motor.MotorStop(0)

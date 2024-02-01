@@ -65,7 +65,7 @@ def ajuste(i):
 def search(i):
     dt_rot = 0.2
     h_s = 30
-    v_s = 50
+    v_s = 40
     lastTimeSeenTarget = t.time()
     last_rotation = t.time()
     last_x = 0
