@@ -125,6 +125,8 @@ async def run():
     #   - Aller à l'arrivé
     await pr.send_signal(ws, 7, ordre[1])
     print("On part vers l'arrivé")
+    deplacement(2)
+    search(9)
     # tools.move_to_balise(9)
 
     #   - Envoyer un signal quand on est arrivé

@@ -5,8 +5,7 @@ import time as t
 import numpy as np
 from rotation_distance import *
 
-h_s = 30
-v_s = 30
+
 
 last_rotation = t.time()
 CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
@@ -64,7 +63,8 @@ def ajuste(i):
             
 
 def search(i):
-
+    h_s = 30
+    v_s = 50
     lastTimeSeenTarget = t.time()
     last_rotation = t.time()
     last_x = 0
@@ -101,7 +101,7 @@ def search(i):
                 # else:
                 
                     
-        elif t.time()-lastTimeSeenTarget > 0.1: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
+        elif t.time()-lastTimeSeenTarget > 0.3: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
 
             if t.time() - last_rotation < 0.4: #regarde pendant 0.4 secondes
                     Motor.MotorStop(0)
@@ -113,11 +113,13 @@ def search(i):
                 else:
                     Motor.Move(vertical_speed=0, horizontal_speed=h_s)
 
-                t.sleep(0.05)
+                t.sleep(0.5)
                 Motor.MotorStop(0)
                 Motor.MotorStop(1)
                 last_rotation = t.time()
 
+if __name__ == "__main__":
+    search(10)
 
 #tourne(120)
 #deplacement(1)
