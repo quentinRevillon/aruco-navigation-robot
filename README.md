@@ -1,6 +1,6 @@
 # aruco-navigation-robot — Raspberry Pi robot racing between ArUco beacons
 
-**aruco-navigation-robot** drives a two-wheeled Raspberry Pi robot through a sequence of ArUco
+**aruco-navigation-robot** drives a differential-drive Raspberry Pi robot through a sequence of ArUco
 beacons placed around a circular arena, using a calibrated USB camera to measure the distance and
 viewing angle of each beacon, and coordinates with other robots through a WebSocket master server.
 
@@ -97,5 +97,9 @@ The 23 calibration photos are not versioned. Place your own photos in `data/cali
 ## Team
 
 Quentin Revillon, Manon Strasser, Albane Arifon, Vincent Hekimian (Télécom Paris, PROJ103 2023-2024).
-Manon Strasser designed the laser-cut chassis. Commits by `r2d2` were made from the robot's shared
-Raspberry Pi account. The PWM driver is adapted from the Waveshare Motor Driver HAT example code.
+Manon Strasser designed the laser-cut chassis, Albane Arifon worked on the slider page of the phone
+remote control, and Vincent Hekimian wrote the meeting notes (removed from the tree, kept in the
+history). Commits by `r2d2` were made from the robot's shared Raspberry Pi account.
+`robot/protocol.py` and `master_server.py` are refactored from the race protocol code common to all
+robots, imported in commit `bc33fc5`. The PWM driver is adapted from the Waveshare Motor Driver HAT
+example code.
