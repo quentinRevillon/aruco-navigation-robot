@@ -1,81 +1,46 @@
-from math import cos,acos,sin,pi,degrees
+"""Arena geometry: heading change needed to go from one beacon to the next.
+
+The arena is a circle of radius 2.5 m with beacons on its border. A beacon at
+position p (integer in [-3, 3], 0 facing the start) sits at polar angle
+pi/2 - p * pi/4 from the arena centre.
+
+Usage:
+    from robot.geometry import turn_angle
+    turn_angle(0, 1, 0.3, 0.0)   # 45.0: turn 45 degrees to the right
+"""
+from math import acos, cos, degrees, pi, sin
+
 import numpy as np
 
-def angle_ij(i,j,d,a,ecart = 0.2,r = 2.5):
-    '''
-    Le robot est à une distance d de la balise i, à un angle a
-    il vise le point en face de la balise j à un écart de 20cm (voir dessin)
-    Paramètres :
-    -----------
-    i : id de la balise sur laquelle le robot est
-    j : id de la balise que le robot vise
-    d : distance robot balise (en m)
-    a : angle axe robot, balise .
-        utiliser acquisition_donnees.py -> estimation_angle_aruco pour le connaitre
-    ecart : distance entre balise j et point visé sur l'axe centre-balise j (en m)
-    r : le rayon du terrain (en m)
-    Résultat :
-    -----------
-    Calcule l'angle dont il doit tourner (en degré)
-    Si l'angle est negatif, on tourne vers la gauche
-    '''
+ARENA_RADIUS_M = 2.5
+TARGET_OFFSET_M = 0.2  # aim at a point this far in front of the next beacon
 
 
-    rprime = r - ecart
-
-    bi = -i*pi/4+pi/2
-    bj = -j*pi/4+pi/2
-
-    #vecteur entre le robot et la balise de départ
-    RBi = np.array([d*cos(a+bi),d*sin(a+bi)])
-    normeRBi = d
-
-    #Vecteur vers la 2eme balise
-    OBi = np.array([r*cos(bi),r*sin(bi)])
-    OCj = np.array([rprime*cos(bj),rprime*sin(bj)])
-
-    RCj = RBi-OBi+OCj
-    normeRCj = np.linalg.norm(RCj)
-
-    cosi = np.dot(RBi, RCj)/(normeRBi*normeRCj)
-    theta = degrees(acos(cosi))
-    if -np.cross(RBi, RCj) >= 0:
-        return theta
-    return -theta
+def beacon_angle(position):
+    """Polar angle (radians) of the beacon at a given arena position."""
+    return pi / 2 - position * pi / 4
 
 
+def turn_angle(current, target, distance, angle):
+    """Heading change, in degrees, to aim at the point in front of the next beacon.
 
+    Args:
+        current: arena position of the beacon the robot stands in front of.
+        target: arena position of the next beacon.
+        distance: robot-to-current-beacon distance, in metres.
+        angle: angle between robot axis and current beacon normal, in radians
+            (robot.detection.marker_angle).
 
-assert angle_ij(-2,2,2.5,0) == 180.0
-#assert angle_ij(0,-1,2.5,0) == -45
-assert abs(angle_ij(0,1,2.5,0) - 45) < 0.0001
-assert angle_ij(-1,-3,2.5,0) == -90
-assert angle_ij(3,1,2.5,0) == -90
-assert angle_ij(1,3,2.5,0) == 90
+    Returns:
+        float, positive to turn right, negative to turn left.
+    """
+    b_current, b_target = beacon_angle(current), beacon_angle(target)
+    robot_to_current = np.array([distance * cos(angle + b_current), distance * sin(angle + b_current)])
+    centre_to_current = ARENA_RADIUS_M * np.array([cos(b_current), sin(b_current)])
+    centre_to_aim = (ARENA_RADIUS_M - TARGET_OFFSET_M) * np.array([cos(b_target), sin(b_target)])
+    robot_to_aim = robot_to_current - centre_to_current + centre_to_aim
 
-
-
-
-def iscrossing(Triangle,BA,posbalise):
-    '''
-    Parametre :
-    ----------
-    Triangle : liste [B1,B2,B3] : balises de l'autre triangle
-    BA : balise actuelle
-    posbalise : le dictionnaire associant les balises à leur position selon la convention
-    Résultat :
-    ----------
-    Renvoie True si pour aller a ZA, le robot placé a BA croise le triangle opposé
-    Renvoie False s'il ne croise pas
-    '''
-    Triangle_pos = [posbalise[b] for b in Triangle]
-    BA_pos = posbalise[BA]
-    Croise = False
-    for b in Triangle_pos:
-        if b*BA_pos > 0:
-            if abs(BA_pos) < abs(b):
-                Croise = True
-    return Croise
-
-assert iscrossing([1,3,5],4,{1:1,2:2,3:3,4:-3,5:-2,6:-1}) == False
-assert iscrossing([1,3,4],5,{1:1,2:2,3:3,4:-3,5:-2,6:-1}) == True
+    cosine = robot_to_current @ robot_to_aim / (distance * np.linalg.norm(robot_to_aim))
+    theta = degrees(acos(cosine))
+    cross = robot_to_current[0] * robot_to_aim[1] - robot_to_current[1] * robot_to_aim[0]
+    return theta if cross <= 0 else -theta

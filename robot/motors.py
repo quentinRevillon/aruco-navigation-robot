@@ -1,78 +1,46 @@
-#!/usr/bin/python
+"""Differential drive of the two DC motors through the Waveshare Motor Driver HAT.
 
-from PCA9685 import PCA9685
-import time
+Usage (on the Raspberry Pi):
+    from robot.motors import MotorDriver
+    motors = MotorDriver()
+    motors.move(forward=40, turn=0)    # straight ahead at 40 % duty cycle
+    motors.move(forward=0, turn=30)    # spin right on the spot
+    motors.stop()
+"""
+from robot.pca9685 import PCA9685
 
-Dir = [
-    'forward',
-    'backward',
-]
-pwm = PCA9685(0x40, debug=False)
-pwm.setPWMFreq(50)
+LEFT, RIGHT = 0, 1
+# (PWM channel, IN1 channel, IN2 channel) of each motor on the HAT
+CHANNELS = {LEFT: (0, 1, 2), RIGHT: (5, 3, 4)}
+LEFT_TRIM = 1.025  # the left motor is slightly slower: boost it to drive straight
 
-class MotorDriver():
+
+class MotorDriver:
+    """Owns the PCA9685 chip that powers both motors."""
+
     def __init__(self):
-        self.PWMA = 0
-        self.AIN1 = 1
-        self.AIN2 = 2
-        self.PWMB = 5
-        self.BIN1 = 3
-        self.BIN2 = 4
+        """Initialise the PWM chip at its default HAT address (0x40, 50 Hz)."""
+        self.pwm = PCA9685(0x40)
+        self.pwm.set_pwm_freq(50)
 
-    def MotorRun(self, motor, index, speed):
-        if speed > 100:
-            return
-        if(motor == 0):
-            pwm.setDutycycle(self.PWMA, speed)
-            if(index == Dir[0]):
- #               print ("1")
-                pwm.setLevel(self.AIN1, 0)
-                pwm.setLevel(self.AIN2, 1)
-            else:
-  #              print ("2")
-                pwm.setLevel(self.AIN1, 1)
-                pwm.setLevel(self.AIN2, 0)
-        else:
-            pwm.setDutycycle(self.PWMB, speed)
-            if(index == Dir[0]):
-   #             print ("3")
-                pwm.setLevel(self.BIN1, 0)
-                pwm.setLevel(self.BIN2, 1)
-            else:
-    #            print ("4")
-                pwm.setLevel(self.BIN1, 1)
-                pwm.setLevel(self.BIN2, 0)
+    def run(self, motor, speed):
+        """Run one motor at a signed speed.
 
-    def MotorStop(self, motor):
-        if (motor == 0):
-            pwm.setDutycycle(self.PWMA, 0)
-        else:
-            pwm.setDutycycle(self.PWMB, 0)
+        Args:
+            motor: LEFT or RIGHT.
+            speed: duty cycle in percent, negative to go backwards; saturated at 100.
+        """
+        pwm_channel, in1, in2 = CHANNELS[motor]
+        self.pwm.set_duty_cycle(pwm_channel, min(abs(speed), 100))
+        self.pwm.set_level(in1, int(speed < 0))
+        self.pwm.set_level(in2, int(speed >= 0))
 
+    def move(self, forward, turn):
+        """Combine a forward speed and a turn speed (positive turns right), in percent."""
+        self.run(LEFT, (forward + turn) * LEFT_TRIM)
+        self.run(RIGHT, forward - turn)
 
-    def Move(self, vertical_speed, horizontal_speed):
-
-            if horizontal_speed > 0:                
-                speed_right_motor = vertical_speed - horizontal_speed 
-                speed_left_motor = vertical_speed + horizontal_speed
-
-            else:
-                speed_right_motor = vertical_speed - horizontal_speed
-                speed_left_motor = vertical_speed + horizontal_speed
- 
-            if speed_right_motor > 0 :
-                self.MotorRun(1, 'forward', speed_right_motor)
-            else:
-                self.MotorRun(1, 'backward', -speed_right_motor)
-
-            if speed_left_motor > 0:
-                self.MotorRun(0, 'forward', speed_left_motor*1.025)
-            else:
-                self.MotorRun(0, 'backward', -speed_left_motor*1.025)
-
-    def Stop(self):
-        self.MotorStop(0)
-        self.MotorStop(1)
-
-
-
+    def stop(self):
+        """Cut power to both motors."""
+        self.pwm.set_duty_cycle(CHANNELS[LEFT][0], 0)
+        self.pwm.set_duty_cycle(CHANNELS[RIGHT][0], 0)

@@ -1,161 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-   
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-            
-
+    <!-- user-scalable=no prevents zooming while dragging the sliders on a phone -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-
-    <title>Contrôle des curseurs</title>
+    <title>Robot remote control</title>
     <style>
-        input[type="range"]  {
-        -webkit-appearance: none;
-        width: 100%;
-        height: 100px; /* Hauteur des boutons */
-  }
-        input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 100px; /* Largeur des boutons */
-        height: 100px; /* Hauteur des boutons */
-        background-color: #faee00; /* Couleur des boutons */
-        border-radius: 50%; /* Forme des boutons (rond) */
-
-        }
-
-
         body {
-            width: 280px; /* Largeur de la page */
-            height: 150px; /* Hauteur de la page */
+            width: 280px;
+            height: 150px;
             margin: 0;
             padding: 0;
-            overflow: hidden; /*empêche redimmensionnement et zoom sur tel*/
+            overflow: hidden;
         }
-        
-
-        /* Styles pour le conteneur du curseur 1 (vertical) */
-        #curseur1Container {
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 100px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 100px;
+            background-color: #faee00;
+            border-radius: 50%;
+        }
+        #forwardContainer {
             position: absolute;
-            left: 70px; /* Position à 20px de la gauche */
-            top: 60px; /* Position en haut à 50px du haut */
+            left: 70px;
+            top: 60px;
         }
-    
         #vertical {
             width: 300px;
-            height: 300px; 
-            transform: rotate(-90deg); /* curseur vertical */
+            height: 300px;
+            transform: rotate(-90deg);
         }
-
-    
-        /* Styles pour le conteneur du curseur 2 (horizontal) */
-        #curseur2Container {
+        #turnContainer {
             position: absolute;
-            right: 40px; /* Position à 20px de la droite */
-            top: 175px; /* Position en haut à 50px du haut */
+            right: 40px;
+            top: 175px;
         }
-
-        /* Styles pour agrandir le curseur 2 */
         #horizontal {
-            width: 300px; 
-            height: 20px; 
+            width: 300px;
+            height: 20px;
         }
-        #autoPilotContainer {
-    position: absolute;
-    left: 50%; /* Centrer le bouton horizontalement */
-    top: 300px; /* Position verticale */
-    transform: translateX(-50%); /* Ajustement fin pour centrer */
-}
-
-/* Styles pour le bouton de pilotage automatique */
-#autoPilotButton {
-    width: 150px; /* Largeur du bouton */
-    height: 50px; /* Hauteur du bouton */
-    background-color: #4CAF50; /* Couleur du bouton */
-    color: white; /* Couleur du texte */
-    border: none;
-    border-radius: 5px; /* Bords arrondis */
-    font-size: 16px; /* Taille du texte */
-    cursor: pointer; /* Curseur en forme de pointeur */
-}
-
-#autoPilotButton:hover {
-    background-color: #45a049; /* Changement de couleur au survol */
-}
-
-        
     </style>
 </head>
 <body>
-    <h1>Commandes Kev</h1>
-    
-    
-    <div id="curseur1Container">
+    <h1>Robot remote control</h1>
+    <div id="forwardContainer">
         <input type="range" id="vertical" min="-100" max="100" value="0">
     </div>
-
-    <!-- Curseur 2 (horizontal) -->
-    <div id="curseur2Container">
+    <div id="turnContainer">
         <input type="range" id="horizontal" min="-100" max="100" value="0">
     </div>
-    <div id="autoPilotContainer">
-    <button id="autoPilotButton">Pilotage Automatique</button>
-</div>
 
     <script>
-        
-        var socket = io.connect('http://137.194.173.13:5000');
-        const vertical = document.getElementById("vertical");
+        const socket = io();
 
-        
-        const horizontal = document.getElementById("horizontal");
-
-        socket.on('connect', function() {
-            socket.send('User has connected!');
-        });        
-
-        
-       
-        // Réinitialiser les curseurs à leur valeur initiale lorsqu'ils sont relâchés (événement "change")
-        vertical.addEventListener("change", function() {
-            vertical.value = 0;
-            sendSliderPosition("vertical", this.value);
-            
-
-        });
-
-        horizontal.addEventListener("change", function() {
-            horizontal.value = 0;
-            sendSliderPosition("horizontal", this.value);
-	    
-            
-        });
-
-            function sendSliderPosition(address, value) {
-                socket.emit(address, {value:value})
-
-                    };
-                
-
-
-
-        vertical.addEventListener("input", function(){
-            sendSliderPosition("vertical", this.value)
-        })
-
-        horizontal.addEventListener("input", function(){
-            sendSliderPosition("horizontal", this.value)
-        })
-        
-        const autoPilotButton = document.getElementById("autoPilotButton");
-
-        autoPilotButton.addEventListener("click", function() {
-        socket.emit("autoPilot", { mode: "on" }); // Envoyer l'information au serveur
-    // Vous pouvez ajouter ici d'autres actions à réaliser au clic sur le bouton
-});
-      
-
-
+        // Send the slider value on every move, and reset it to 0 when released.
+        for (const name of ["vertical", "horizontal"]) {
+            const slider = document.getElementById(name);
+            slider.addEventListener("input", () => socket.emit(name, {value: slider.value}));
+            slider.addEventListener("change", () => {
+                slider.value = 0;
+                socket.emit(name, {value: 0});
+            });
+        }
     </script>
-    
 </body>
 </html>

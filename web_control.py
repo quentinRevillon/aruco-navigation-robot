@@ -1,60 +1,43 @@
+"""Remote control of the robot from a phone: two sliders served by Flask-SocketIO.
 
-import os
-import RPi.GPIO as GPIO
-from flask import Flask, render_template, Response, request
+The vertical slider sets the forward speed, the horizontal slider the turn
+speed (halved for smoother steering); both return to 0 when released.
+
+Usage (on the Raspberry Pi), then open http://<robot-ip>:5000 on a phone:
+    python web_control.py
+"""
+from flask import Flask, render_template
 from flask_socketio import SocketIO
 
-import datetime
-import motor_manuel
-Motor = motor.MotorDriver()
-vertical_speed = 0
-horizontal_speed = 0
+from robot.motors import MotorDriver
 
-app=Flask(__name__)
+TURN_SCALE = 0.5
+
+app = Flask(__name__)
 socketio = SocketIO(app)
-@app.route('/')
+motors = MotorDriver()
+command = {"forward": 0, "turn": 0}
+
+
+@app.route("/")
 def index():
-    
-    #return render_template('rpi_index.html',**templateData)
-    return render_template('curseurs.html')
-            
-@socketio.on('connect')
-def connect():
-    print('someone is  connected')
-
-@socketio.on('vertical')
-def change_vertical_value(data):
-    # id = request.form['id']
-    value = int(data["value"])
-    print(f"Received value: {value}")
-    global vertical_speed
-    global horizontal_speed
-    vertical_speed = value
-    Motor.Move(vertical_speed, horizontal_speed)
-    return "Value set successfully"
-
-@socketio.on('horizontal')
-def change_horizontal_value(data):
-    # id = request.form['id']
-    value = int(data["value"])
-    print(f"Received value: {value}")
-    global horizontal_speed
-    global vertical_speed
-    horizontal_speed = value*0.5
-    Motor.Move(vertical_speed, horizontal_speed)
-
-@socketio.on('autoPilot')
-def launchAutoPilot(mode):
-    import automatique
-    print('je passe en mode auto')
-    # Ici, vous pouvez ajouter le code pour contrôler les pins GPIO en fonction de la valeur
-
-    return "Value set successfully"
-                          
-if __name__=='__main__':
-    
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
-    #local web server http://192.168.1.200:5000/
-    #after Port forwarding Manipulation http://xx.xx.xx.xx:5000/
+    """Serve the slider page."""
+    return render_template("teleop.html")
 
 
+@socketio.on("vertical")
+def set_forward(data):
+    """Update the forward speed (percent) from the vertical slider."""
+    command["forward"] = int(data["value"])
+    motors.move(**command)
+
+
+@socketio.on("horizontal")
+def set_turn(data):
+    """Update the turn speed (percent) from the horizontal slider."""
+    command["turn"] = int(data["value"]) * TURN_SCALE
+    motors.move(**command)
+
+
+if __name__ == "__main__":
+    socketio.run(app, host="0.0.0.0", port=5000)

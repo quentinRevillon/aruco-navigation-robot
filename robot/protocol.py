@@ -1,63 +1,58 @@
-import asyncio
+"""WebSocket client of the race master server (see master_server.py).
+
+All robots of the race connect to one master. Each robot reports its current
+step and beacon; the master answers with the shared state and tells which
+robot may move ("go"). JSON keys ("id", "balise", "etape", "robots", "go",
+"balises") are part of the protocol shared by all teams and stay in French.
+
+Usage:
+    import asyncio
+    from robot import protocol
+
+    async def main():
+        ws = await protocol.open_connection(13)
+        beacons = await protocol.get_beacon_positions(ws)   # {"4": 1, "6": -1, ...}
+        while not await protocol.can_go(ws, step=0, marker=0):
+            await asyncio.sleep(0.5)
+
+    asyncio.run(main())
+"""
+import json
+
 import websockets
-import json    
-import time
 
-MASTER_ADRESSE = "ws://robotpi-15.enst.fr:9000"
-# MASTER_ADRESSE = "ws://localhost:9000"
-ID = -1
+MASTER_ADDRESS = "ws://robotpi-15.enst.fr:9000"
+ROBOT_ID = -1  # set by open_connection
 
 
-async def open_connection(id: int)->websockets.WebSocketClientProtocol:
-    """
-    :param id: identifiant de connexion du robot. (ex: 11 pour robotpi-11)
-    :return: Une classe websocket qui permet de communiquer.
-    """
-    global ID
-    ID = id
-    websocket = await websockets.connect(MASTER_ADRESSE)
-    await websocket.send(str(id))
+async def open_connection(robot_id):
+    """Connect to the master and register with a robot id (e.g. 13 for robotpi-13)."""
+    global ROBOT_ID
+    ROBOT_ID = robot_id
+    websocket = await websockets.connect(MASTER_ADDRESS)
+    await websocket.send(str(robot_id))
     return websocket
 
 
-async def close_connection(websocket:websockets.WebSocketClientProtocol):
-    """
-    Ferme la connexion avec le serveur.
-    """
-    await websocket.close()
+async def send_signal(websocket, step, marker=None):
+    """Report the current race step and the beacon the robot is at."""
+    await websocket.send(json.dumps({"id": ROBOT_ID, "balise": marker, "etape": step}))
 
 
-async def can_go(websocket:websockets.WebSocketClientProtocol, etape:int, balise:int)->bool:
-    """
-    :param websocket: La clé de connection au "master"
-    :param etape: La phase dans laquelle on est
-    :param balise: Balise ou la voiture est localisée.
-    :return: True si on peut partir pour la prochaine balise. False sinon.
-    """
-    rapport = json.dumps({"id" : ID, "balise":balise, "etape":etape})                                    #transformation en json de l'id
-    await websocket.send(rapport)
-    masterrobot_m = await websocket.recv()
-    masterrobot = json.loads(masterrobot_m)
-    return masterrobot["robots"][str(ID)]["go"]
+async def receive_state(websocket):
+    """Wait for the next master state message and decode it."""
+    return json.loads(await websocket.recv())
 
 
-async def get_ordre_balise(websocket:websockets.WebSocketClientProtocol):
-    # Fonction a appeler au tout début. 
-    # Le client commence par envoyer un signal a master. Il commence dans la phase 0.
-    rapport = json.dumps({"id" : ID, "balise":None, "etape":0})                                    #transformation en json de l'id
-    await websocket.send(rapport)
-    masterrobot_m = await websocket.recv()
-    masterrobot = json.loads(masterrobot_m)
-    
-    return masterrobot["balises"]
-    ...
+async def can_go(websocket, step, marker):
+    """Report the current step and return True if the master allows this robot to move."""
+    await send_signal(websocket, step, marker)
+    state = await receive_state(websocket)
+    return state["robots"][str(ROBOT_ID)]["go"]
 
 
-async def send_signal(websocket:websockets.WebSocketClientProtocol, etape:int, balise:int = None):
-    """
-    :param websocket: La clé de connection au "master"
-    :param etape: La phase dans laquelle on est
-    :param balise: Balise ou la voiture est localisée.
-    """
-    rapport = json.dumps({"id" : ID, "balise":balise, "etape":etape})                                    #transformation en json de l'id
-    await websocket.send(rapport)
+async def get_beacon_positions(websocket):
+    """Return the beacon id -> arena position map announced by the master (call first)."""
+    await send_signal(websocket, 0)
+    state = await receive_state(websocket)
+    return state["balises"]

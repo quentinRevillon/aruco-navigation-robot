@@ -1,0 +1,7 @@
+numpy>=1.21
+opencv-python>=4.7
+websockets>=10.1
+flask>=2.0
+flask-socketio>=5.0
+smbus2>=0.4; sys_platform == "linux"
+pytest>=7.0

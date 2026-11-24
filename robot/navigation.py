@@ -1,136 +1,72 @@
-import motor
-from consignes import *
-Motor = motor.MotorDriver()
-import time as t
-import numpy as np
-from rotation_distance import *
+"""Visual servoing towards one ArUco beacon.
+
+The robot drives straight while the beacon is visible and stops 0.26 m in
+front of it. When the beacon is lost, it rotates in short bursts towards the
+side where it was last seen, pausing between bursts to let detection catch up.
+
+Usage (on the Raspberry Pi):
+    python -m robot.navigation 10      # drive to beacon 10
+
+    from robot.navigation import go_to_marker
+    corners = go_to_marker(motors, capture, 10)
+"""
+import sys
+import time
+
+from robot.camera import FRAME_WIDTH, open_camera, read_frame
+from robot.detection import detect_markers, marker_center, marker_corners, marker_distance
+from robot.motors import MotorDriver
+
+STOP_DISTANCE_M = 0.26
+APPROACH_SPEED = 40  # duty cycle, percent
+SEARCH_SPEED = 30  # duty cycle, percent
+LOST_DELAY_S = 0.3  # keep going this long after losing the beacon before searching
+LOOK_DURATION_S = 0.4  # pause between two search bursts
+FIRST_BURST_S = 0.2  # rotation burst before the beacon has ever been seen
+NEXT_BURST_S = 0.05  # shorter bursts once it has been seen: it is close to the field of view
 
 
-
-last_rotation = t.time()
-CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
-flux = cv2.VideoCapture(CAMERA_PATH)
-
-def index_of_aruco(ids, i):
-    for index in range(ids.size):
-        if ids[index][0] == i:
-            return index
-    return False
+def rotate_burst(motors, direction, duration):
+    """Spin on the spot for a short duration (direction +1 = right, -1 = left), then stop."""
+    motors.move(forward=0, turn=SEARCH_SPEED * direction)
+    time.sleep(duration)
+    motors.stop()
 
 
+def go_to_marker(motors, capture, marker_id):
+    """Drive to a beacon and stop in front of it.
 
-def search_balise(i, last_x):
-    
-    last_rotation = t.time()
+    Args:
+        motors: robot.motors.MotorDriver.
+        capture: opened camera (robot.camera.open_camera).
+        marker_id: ArUco id of the beacon.
 
-    while True:
-        corners, ids = check(flux)
-        if type(ids) == np.ndarray and i in ids.flatten():
-            return True
-        else:
-            if t.time() - last_rotation < 0.1: #regarde pendant 0.2 secondes
-                    Motor.MotorStop(0)
-                    Motor.MotorStop(1)
-
-            else: #tourne pendant 0.2 secondes
-                if last_x<WIDTH/2:
-                    Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-                else:
-                    Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-
-                t.sleep(0.05)
-                last_rotation = t.time()
-def charge():
-    lastTimeSeenTarget = t.time()
-    while True:
-        corners, ids = check(flux)
-
-        if (type(ids) == np.ndarray and i in ids.flatten()) or  t.time() - lastTimeSeenTarget < 0.1: #ça fait plus d'un dixième de seconde qu'on ne voit plus la balise, on s'arrête
-            Motor.Move(vertical_speed=v_s, horizontal_speed=0)
-        else:
-            Motor.Stop()
-
-def ajuste(i):
-    while True:
-        corners, ids = check(flux)
-        if type(ids) == np.ndarray and i in ids.flatten():
-            x, y = get_middle(corners)
-            if x < WIDTH*0.4:
-                pass
-            
-
-
-            
-
-def search(i):
-    dt_rot = 0.2
-    h_s = 30
-    v_s = 40
-    lastTimeSeenTarget = t.time()
-    last_rotation = t.time()
+    Returns:
+        (4, 2) image corners of the beacon seen from the stop position.
+    """
+    burst = FIRST_BURST_S
     last_x = 0
+    last_seen = last_burst = time.time()
     while True:
-        corners, ids = check(flux)
-        if type(ids) == np.ndarray and i in ids.flatten():
-            index = list(ids.flatten()).index(i)
-            
-            
-            corners = (corners[index],)
-                       
-            
-
-            d = get_distance(corners)
-            x, y = get_middle(corners)
-            last_x = x
-            lastTimeSeenTarget = t.time()
-            last_rotation = t.time()
-
-            print("cible repéré à :", d, "m")
-            dt_rot = 0.05
-            
-            if d>0.26:
-                Motor.Move(vertical_speed=v_s, horizontal_speed=0)
+        corners, ids = detect_markers(read_frame(capture))
+        if marker_id in ids:
+            target = marker_corners(corners, ids, marker_id)
+            distance = marker_distance(target)
+            print(f"beacon {marker_id} at {distance:.2f} m")
+            if distance <= STOP_DISTANCE_M:
+                motors.stop()
+                return target
+            motors.move(forward=APPROACH_SPEED, turn=0)
+            last_x = marker_center(target)[0]
+            last_seen = last_burst = time.time()
+            burst = NEXT_BURST_S
+        elif time.time() - last_seen > LOST_DELAY_S:
+            if time.time() - last_burst < LOOK_DURATION_S:
+                motors.stop()
             else:
-                Motor.MotorStop(0)
-                Motor.MotorStop(1)
-                print("robot arrivé")
-                return corners
-                break
-                # if x <= WIDTH*0.3:
-                #     Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
+                rotate_burst(motors, -1 if last_x < FRAME_WIDTH / 2 else 1, burst)
+                last_burst = time.time()
 
-                # if x >= WIDTH*0.7:
-                #     Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-        
-                # else:
-                
-                    
-        elif t.time()-lastTimeSeenTarget > 0.3: #attend d'avoir perdu la cible pendant au moins 0.5 secondes
-
-            if t.time() - last_rotation < 0.4: #regarde pendant 0.4 secondes
-                    Motor.MotorStop(0)
-                    Motor.MotorStop(1)
-
-            else: #tourne pendant 0.2 secondes
-                if last_x<WIDTH/2:
-                    Motor.Move(vertical_speed=0, horizontal_speed=-h_s)
-                else:
-                    Motor.Move(vertical_speed=0, horizontal_speed=h_s)
-
-                t.sleep(dt_rot)
-                Motor.MotorStop(0)
-                Motor.MotorStop(1)
-                last_rotation = t.time()
 
 if __name__ == "__main__":
-    search(10)
-
-#tourne(120)
-#deplacement(1)
-#search(4)
-#tourne(120)
-#deplacement(1)
-#search(9)
-
-
-
+    go_to_marker(MotorDriver(), open_camera(), int(sys.argv[1]))

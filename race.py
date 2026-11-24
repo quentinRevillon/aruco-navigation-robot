@@ -1,149 +1,87 @@
-import motor
-import time as t
+"""Run the PROJ103 race on the robot: visit three beacons in order, then the finish.
+
+The master server (master_server.py) announces the arena position of every
+beacon and lets one robot move at a time. Our robot drives to the arena centre,
+faces its first beacon, then for each beacon: drives to it with visual
+servoing, measures its viewing angle, turns towards the next beacon and waits
+for the master's "go".
+
+Usage (on the Raspberry Pi, master server running):
+    python race.py --robot-id 13 --route 4 6 2
+"""
+import argparse
 import asyncio
-Motor = motor.MotorDriver()
 
-from fonctions_communes import *
-import fonctions_communes as fc
-from acquisition_donnees import *
-from auto import *
-import protocol as pr
+from robot import protocol
+from robot.camera import open_camera
+from robot.detection import marker_angle
+from robot.geometry import turn_angle
+from robot.motion import move_forward, turn
+from robot.motors import MotorDriver
+from robot.navigation import go_to_marker
 
-import cv2
-
-CAMERA_PATH = "/dev/v4l/by-id/usb-Suyin_HD_Camera_200910120001-video-index0"
-arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
-arucoParams = cv2.aruco.DetectorParameters()
-detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
-
-h_s = 30 #vitesse virages
-v_s = 30 #vitesse avance
-dt = 0.05
-v = 0.2 #en m/s
-    
-async def run():
-    # ETAPES POUR TOUTES LES VOITURES (sauf la première):*
-    #   - Ouvrir la connexion
-    ws = await pr.open_connection(13)
-    balises = await pr.get_ordre_balise(ws)
-    position = [balises[str(b)] for b in ordre]
-    print(position)
-
-    #   - Attendre le go
-    print("On attend de pouvoir partir")
-    while not await pr.can_go(ws, 0, 0):
-        time.sleep(0.5)
-
-    #   - Aller au milieu
-    print("On avance au milieu")
-    deplacement(2.5)
-
-    #   - Chercher notre balise grace a l'information donnée
-
-    if position[0] < 0:
-        tourne(-45*position[0], -1)
-    else:
-        tourne(45*position[0], 1)
-    print("On s'oriente vers la première balise")
+FINISH_MARKER = 9
+FINISH_POSITION = -3
+CENTRE_DISTANCE_M = 2.5  # start line to arena centre
+APPROACH_DISTANCE_M = 1.0  # blind drive before visual servoing towards a beacon
+STANDOFF_M = 0.3  # distance to the beacon used to compute the next heading
+POLL_S = 0.5
 
 
-    #       - Si problème de balise non trouvée chercher normalement
+async def wait_for_go(websocket, step, marker):
+    """Poll the master until this robot is allowed to move."""
+    while not await protocol.can_go(websocket, step, marker):
+        print("waiting for go")
+        await asyncio.sleep(POLL_S)
 
-    #   - Aller à la balise
 
-    await pr.send_signal(ws, 1, ordre[0])
-    deplacement(1)
-    print("On part vers la première balise")
-    corners = search(ordre[0])
-    a = estimation_angle_aruco(corners)
-    #   - Envoyer un signal quand on est arrivé
-    await pr.send_signal(ws, 2, ordre[0])
-    #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = fc.angle_ij(position[0], position[1], 0.3, a)
-    # On peut prendre en compte le fait qu'on connait l'angle d'arrivé donc ne
-    # pas se placer a 0.3m (y a la fontion sur le git)
-    if angle < 0:
-        sens_rota = -1
-    else:
-        sens_rota = 1
-    print("On s'oriente vers la deuxième balise")
-    
-    tourne(abs(angle), sens_rota)
-    
-    
+def face_next_beacon(motors, corners, current, target):
+    """Turn from the current beacon towards the point in front of the next one."""
+    turn(motors, turn_angle(current, target, STANDOFF_M, marker_angle(corners)))
 
-    #   - Attendre le go
-    while not await pr.can_go(ws, 2, ordre[0]):
-        print("On attend de pouvoir partir")
-        time.sleep(0.5)
 
-    #   - Aller à la balise
-    await pr.send_signal(ws, 3, ordre[0])
-    print("On part vers la deuxième balise")
-    deplacement(1)
-    corners = search(ordre[1])
-    a = estimation_angle_aruco(corners)
+async def run_race(robot_id, route):
+    """Run the whole race for one robot.
 
-    #   - Envoyer un signal quand on est arrivé
-    await pr.send_signal(ws, 4, ordre[1])
+    Args:
+        robot_id: id registered with the master (13 for robotpi-13).
+        route: ArUco ids of the beacons to visit, in order.
+    """
+    motors, capture = MotorDriver(), open_camera()
+    websocket = await protocol.open_connection(robot_id)
+    beacons = await protocol.get_beacon_positions(websocket)
+    positions = [beacons[str(marker)] for marker in route] + [FINISH_POSITION]
 
-    #   - Calculer l'angle avec un decalage pour arriver en face
-    angle = fc.angle_ij(position[1], position[2], 0.3, a)
-    if angle < 0:
-        sens_rota = -1
-    else:
-        sens_rota = 1
-    print("On s'oriente vers la troisième balise")
-    tourne(abs(angle), sens_rota)
+    await wait_for_go(websocket, 0, 0)
+    move_forward(motors, CENTRE_DISTANCE_M)
+    turn(motors, 45 * positions[0])
 
-    #   - Attendre le go
-    while not await pr.can_go(ws, 4, ordre[1]):
-        print("On attend de pouvoir partir")
-        time.sleep(0.5)
+    previous = route[0]
+    for k, marker in enumerate(route):
+        await protocol.send_signal(websocket, 2 * k + 1, previous)
+        move_forward(motors, APPROACH_DISTANCE_M)
+        corners = go_to_marker(motors, capture, marker)
+        await protocol.send_signal(websocket, 2 * k + 2, marker)
+        face_next_beacon(motors, corners, positions[k], positions[k + 1])
+        await wait_for_go(websocket, 2 * k + 2, marker)
+        previous = marker
 
-    #   - Aller à la balise
-    await pr.send_signal(ws, 5, ordre[1])
-    print("On part vers la troisième balise")
-    deplacement(1)
-    corners = search(ordre[2])
+    final_step = 2 * len(route) + 1
+    await protocol.send_signal(websocket, final_step, previous)
+    move_forward(motors, 2 * APPROACH_DISTANCE_M)
+    go_to_marker(motors, capture, FINISH_MARKER)
+    await protocol.send_signal(websocket, final_step + 1, FINISH_MARKER)
+    move_forward(motors, APPROACH_DISTANCE_M)  # clear the finish for the next robot
 
-    #   - Envoyer un signal quand on est arrivé
-    await pr.send_signal(ws, 6, ordre[2])
 
-    #   - S'orienter vers l'arrivée
-    angle = fc.angle_ij(position[2], -3, 0.3, a)
-    if angle < 0:
-        sens_rota = -1
-    else:
-        sens_rota = 1
-    print("On s'oriente vers l'arrivé*")
-    tourne(abs(angle), sens_rota)
+def parse_args():
+    """Parse the robot id and the beacon route from the command line."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--robot-id", type=int, default=13, help="id registered with the master server")
+    parser.add_argument("--route", type=int, nargs=3, default=[4, 6, 2], help="ArUco ids of the 3 beacons, in order")
+    return parser.parse_args()
 
-    #   - Attendre le go
-    while not await pr.can_go(ws, 6, ordre[2]):
-        print("On attend de pouvoir partir")
-        time.sleep(0.5)
-
-    #   - Aller à l'arrivé
-    await pr.send_signal(ws, 7, ordre[1])
-    print("On part vers l'arrivé")
-    deplacement(2)
-    search(9)
-    # tools.move_to_balise(9)
-
-    #   - Envoyer un signal quand on est arrivé
-    await pr.send_signal(ws, 8, 9)
-    print("On est arrivé à la fin.")
-
-    #   - Se décaler pour laisser les autres voitures passer
-    deplacement(1)
-
-    # POUR TOUTES LES VOITURES ENVOYER DES SIGNAUX DE VIES
 
 if __name__ == "__main__":
-    ordre = [4, 6, 2]
-    asyncio.get_event_loop().run_until_complete(run())
- 
-# ordre = [2,6,10]
-# position = {6: '-3', 3: '-2', 5: '-1', 10: '0', 0: '1', 2: '2', 4: '3'}L = [-2,1,-1]
-# run()
+    args = parse_args()
+    asyncio.run(run_race(args.robot_id, args.route))
